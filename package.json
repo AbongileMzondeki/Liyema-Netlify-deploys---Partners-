@@ -1,0 +1,12 @@
+{
+  "name": "liyema-partners-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Liyema Consulting Group - Partners Dashboard (real accounts, real data)",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Liyema Partners Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+/* Netlify's stock account emails (invite / confirm / recovery) link to this
+   homepage with a token in the URL hash. The identity widget's automatic
+   handling of that hash has proven unreliable in production (no modal ever
+   appears), so instead we immediately hand off any such link to our own
+   reset.html, which handles all three token types reliably. Runs before
+   anything else loads. */
+(function () {
+  var hash = location.hash || '';
+  if (/(^|[#&])(recovery_token|invite_token|confirmation_token)=/.test(hash)) {
+    location.replace('/reset.html' + hash);
+  }
+})();
+</script>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<style>
+:root{
+  --c-primary:#0f2942; --c-primary-light:#1c3f60; --c-primary-tint:#eef3f8;
+  --c-accent:#c9a227; --c-accent-light:#e8c95d;
+  --c-bg:#f2f4f8; --c-card:#ffffff; --c-sidebar:#0f2942;
+  --c-text:#1c2733; --c-text-soft:#4b5768; --c-muted:#78849a; --c-inverse:#ffffff; --c-border:#e4e9f1;
+  --c-danger:#c0392b; --c-danger-bg:#fdecea; --c-danger-border:#f3c9c4;
+  --c-warning:#a9720c; --c-warning-bg:#fdf3dc; --c-warning-border:#ecdba0;
+  --c-success:#1e7a4c; --c-success-bg:#e7f6ee; --c-success-border:#bfe4cf;
+  --c-info:#1c5fa8; --c-info-bg:#e7f0fb; --c-info-border:#c7dcf5;
+  --c-teal:#0f7a72; --c-teal-bg:#e3f5f2; --c-teal-border:#bfe6df;
+  --c-neutral:#666f7d; --c-neutral-bg:#eef0f3;
+  --radius-sm:6px; --radius-md:10px; --radius-lg:16px;
+  --shadow-sm:0 1px 2px rgba(15,41,66,.06); --shadow-md:0 6px 20px rgba(15,41,66,.08); --shadow-lg:0 16px 40px rgba(15,41,66,.18);
+  --space-4:16px; --space-5:24px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --sidebar-w:236px;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--font);background:var(--c-bg);color:var(--c-text);-webkit-font-smoothing:antialiased;}
+.hidden{display:none !important;}
+
+#login{min-height:100vh;display:flex;background:var(--c-primary);}
+.login-visual{flex:1.1;display:flex;flex-direction:column;justify-content:center;padding:64px;background:
+  radial-gradient(circle at 20% 20%, rgba(201,162,39,.18), transparent 45%),
+  radial-gradient(circle at 80% 75%, rgba(28,63,96,.9), transparent 55%),
+  var(--c-primary); color:#fff;position:relative;overflow:hidden;}
+.login-visual .brandmark{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;margin-bottom:48px;}
+.login-visual .brandmark .dot{width:11px;height:11px;border-radius:50%;background:var(--c-accent);}
+.logo-plate{background:#fff;border-radius:8px;padding:6px 9px;display:inline-flex;align-items:center;line-height:0;flex-shrink:0;}
+.logo-plate img{display:block;height:26px;width:auto;}
+.login-visual .brandmark .logo-plate{padding:8px 11px;}
+.login-visual .brandmark .logo-plate img{height:32px;}
+.login-card-logo{background:var(--c-primary-tint);margin:0 auto 20px;padding:10px 14px;}
+.login-card-logo img{height:30px;}
+.login-visual h2{font-size:32px;line-height:1.25;font-weight:700;max-width:460px;margin:0 0 18px;}
+.login-visual p{font-size:15px;line-height:1.6;color:rgba(255,255,255,.72);max-width:420px;margin:0 0 32px;}
+.login-panel{flex:1;display:flex;align-items:center;justify-content:center;padding:40px;}
+.login-card{background:var(--c-card);border-radius:var(--radius-lg);padding:44px;width:400px;max-width:100%;box-shadow:var(--shadow-lg);text-align:center;}
+.login-card h1{font-size:21px;margin:0 0 8px;color:var(--c-primary);font-weight:700;}
+.login-card p.sub{margin:0 0 28px;color:var(--c-muted);font-size:13.5px;line-height:1.6;}
+.login-card button.submit{width:100%;padding:14px;border:none;border-radius:var(--radius-sm);background:var(--c-primary);color:#fff;font-size:14px;font-weight:700;cursor:pointer;}
+.login-card button.submit:hover{background:var(--c-primary-light);}
+.login-note{margin-top:20px;font-size:11.5px;color:var(--c-text-soft);line-height:1.55;background:var(--c-primary-tint);border:1px solid var(--c-border);border-radius:var(--radius-sm);padding:11px 13px;text-align:left;}
+.login-loading{font-size:12.5px;color:var(--c-muted);margin-top:14px;}
+
+#app{min-height:100vh;display:flex;}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--c-sidebar);color:#fff;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
+.sidebar .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;padding:22px 22px 20px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sidebar .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--c-accent);flex-shrink:0;}
+.sidebar .brand .sub{display:block;font-size:10.5px;font-weight:500;color:rgba(255,255,255,.5);margin-top:2px;text-transform:uppercase;letter-spacing:.03em;}
+.sidebar nav{flex:1;padding:16px 12px;}
+.sidebar nav button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;color:rgba(255,255,255,.72);padding:11px 14px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;margin-bottom:2px;position:relative;}
+.sidebar nav button .ic{font-size:15px;width:18px;text-align:center;}
+.sidebar nav button:hover{background:rgba(255,255,255,.06);color:#fff;}
+.sidebar nav button.active{background:rgba(201,162,39,.16);color:#fff;}
+.sidebar nav button.active::before{content:'';position:absolute;left:-12px;top:8px;bottom:8px;width:3px;background:var(--c-accent);border-radius:0 3px 3px 0;}
+.sidebar .ext{padding:0 12px 12px;}
+.sidebar .ext a{display:flex;align-items:center;gap:9px;padding:10px 14px;border-radius:9px;font-size:12.5px;font-weight:600;color:rgba(255,255,255,.6);text-decoration:none;border:1px dashed rgba(255,255,255,.18);}
+.sidebar .ext a:hover{color:#fff;border-color:rgba(255,255,255,.4);}
+.sidebar .who{padding:16px 22px 20px;border-top:1px solid rgba(255,255,255,.08);}
+.sidebar .who .name{font-size:13px;font-weight:700;}
+.sidebar .who .role{font-size:11px;color:rgba(255,255,255,.55);margin-bottom:12px;}
+.sidebar .who button{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;padding:8px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;}
+.sidebar .who button:hover{background:rgba(255,255,255,.18);}
+
+.content{flex:1;min-width:0;display:flex;flex-direction:column;}
+.content-topbar{background:var(--c-card);border-bottom:1px solid var(--c-border);padding:18px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.content-topbar h1{font-size:19px;margin:0;color:var(--c-primary);font-weight:700;}
+.content-topbar .databar{font-size:11.5px;color:var(--c-muted);margin-top:3px;}
+.content-topbar .databar b{color:var(--c-text-soft);}
+.refresh-pill{font-size:11px;font-weight:700;color:var(--c-success);background:var(--c-success-bg);border:1px solid var(--c-success-border);padding:5px 12px;border-radius:20px;white-space:nowrap;cursor:pointer;}
+
+main{padding:28px 32px 60px;max-width:1280px;width:100%;margin:0 auto;}
+h2.section-title{font-size:16px;margin:0 0 14px;color:var(--c-primary);font-weight:700;}
+.grid-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:var(--space-4);margin-bottom:var(--space-5);}
+.kpi{background:var(--c-card);border:1px solid var(--c-border);border-radius:var(--radius-md);padding:18px 20px;box-shadow:var(--shadow-sm);}
+.kpi .val{font-size:28px;font-weight:800;color:var(--c-primary);line-height:1.1;}
+.kpi .lbl{font-size:12px;color:var(--c-muted);margin-top:5px;font-weight:600;}
+.kpi.accent-danger .val{color:var(--c-danger);}
+.kpi.accent-warning .val{color:var(--c-warning);}
+
+.grid-charts{display:grid;grid-template-columns:1.3fr 1fr;gap:var(--space-4);margin-bottom:var(--space-5);}
+@media (max-width:900px){.grid-charts{grid-template-columns:1fr;}}
+.chart-card{background:var(--c-card);border:1px solid var(--c-border);border-radius:var(--radius-md);padding:18px 20px;box-shadow:var(--shadow-sm);}
+.chart-card h3{font-size:13px;font-weight:700;color:var(--c-primary);margin:0 0 14px;}
+.chart-card .canvas-wrap{position:relative;height:220px;}
+
+.alert{border-radius:var(--radius-sm);padding:13px 16px;margin-bottom:9px;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-width:1px;border-style:solid;}
+.alert.red{background:var(--c-danger-bg);color:var(--c-danger);border-color:var(--c-danger-border);}
+.alert.amber{background:var(--c-warning-bg);color:var(--c-warning);border-color:var(--c-warning-border);}
+.alert b{font-weight:700;}
+.alert .tag{font-size:10.5px;font-weight:800;text-transform:uppercase;padding:3px 10px;border-radius:20px;background:rgba(0,0,0,.06);white-space:nowrap;flex-shrink:0;}
+
+.card{background:var(--c-card);border:1px solid var(--c-border);border-radius:var(--radius-md);padding:20px 22px;margin-bottom:var(--space-5);box-shadow:var(--shadow-sm);}
+.card-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.toolbar select{padding:7px 10px;border:1px solid var(--c-border);border-radius:7px;font-size:12.5px;background:#fafbfc;}
+
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:10px 10px;color:var(--c-muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid var(--c-border);font-weight:700;cursor:pointer;user-select:none;white-space:nowrap;}
+th:hover{color:var(--c-primary);}
+th .arrow{opacity:.5;font-size:9px;margin-left:3px;}
+td{padding:11px 10px;border-bottom:1px solid var(--c-border);vertical-align:middle;}
+tbody tr:hover{background:var(--c-primary-tint);}
+tr:last-child td{border-bottom:none;}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.badge.open{background:var(--c-info-bg);color:var(--c-info);}
+.badge.closed{background:var(--c-neutral-bg);color:var(--c-neutral);}
+.badge.submitted{background:var(--c-info-bg);color:var(--c-info);}
+.flag{display:inline-block;font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;margin-left:7px;white-space:nowrap;}
+.flag.needs{background:var(--c-danger-bg);color:var(--c-danger);}
+.flag.stalled{background:var(--c-warning-bg);color:var(--c-warning);}
+.flag.win{background:var(--c-success-bg);color:var(--c-success);}
+.flag.active{background:var(--c-info-bg);color:var(--c-info);}
+.flag.closedflag{background:var(--c-neutral-bg);color:var(--c-neutral);}
+.flag.interviewing{background:var(--c-teal-bg);color:var(--c-teal);}
+
+form.inline-form{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;}
+form.inline-form .fld{display:flex;flex-direction:column;gap:5px;}
+form.inline-form label{font-size:11px;color:var(--c-muted);font-weight:700;text-transform:uppercase;}
+form.inline-form select,form.inline-form input,form.inline-form textarea{padding:9px 11px;border:1px solid var(--c-border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);}
+form.inline-form textarea{width:100%;min-height:72px;resize:vertical;}
+.btn{padding:10px 18px;border:none;border-radius:var(--radius-sm);background:var(--c-primary);color:#fff;font-size:13px;font-weight:700;cursor:pointer;}
+.btn:hover{background:var(--c-primary-light);}
+.btn.gold{background:var(--c-accent);color:#3a2c00;}
+.btn.gold:hover{background:var(--c-accent-light);}
+.btn.ghost{background:transparent;border:1px solid var(--c-border);color:var(--c-text-soft);}
+.btn.ghost:hover{background:var(--c-primary-tint);}
+.btn.danger{background:var(--c-danger-bg);border:1px solid var(--c-danger-border);color:var(--c-danger);}
+.btn.danger:hover{background:var(--c-danger-border);}
+.btn.sm{padding:6px 12px;font-size:12px;}
+.settings-card table td{padding:8px 0;font-size:13px;border-bottom:1px solid var(--c-border);}
+.settings-card table tr:last-child td{border-bottom:none;}
+
+.muted{color:var(--c-muted);}
+.small{font-size:11px;}
+.feedback-item{border-bottom:1px solid var(--c-border);padding:14px 0;}
+.feedback-item:last-child{border-bottom:none;}
+.feedback-item .meta{font-size:11px;color:var(--c-muted);margin-bottom:5px;font-weight:600;}
+.empty{color:var(--c-muted);font-size:13px;padding:16px 0;text-align:center;}
+.resolved-tag{font-size:10px;font-weight:800;color:var(--c-success);background:var(--c-success-bg);padding:2px 9px;border-radius:20px;margin-left:8px;}
+.note-box{background:var(--c-primary-tint);border:1px solid var(--c-border);border-radius:var(--radius-sm);padding:11px 14px;font-size:12.5px;color:var(--c-text-soft);margin-bottom:18px;line-height:1.5;}
+.error-box{background:var(--c-danger-bg);border:1px solid var(--c-danger-border);color:var(--c-danger);border-radius:var(--radius-sm);padding:11px 14px;font-size:12.5px;margin-bottom:18px;}
+.tabfade{animation:fadeIn .18s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.link-row{color:var(--c-primary);cursor:pointer;font-weight:600;}
+.link-row:hover{text-decoration:underline;}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,32,.55);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:100;overflow-y:auto;animation:fadeIn .15s ease;}
+.modal-overlay.hidden{display:none;}
+.modal-box{background:#fff;border-radius:var(--radius);max-width:820px;width:100%;padding:26px 28px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;}
+.modal-head h2{margin:0;font-size:18px;}
+.modal-head .close{cursor:pointer;color:var(--c-muted);font-size:20px;line-height:1;padding:2px 6px;border-radius:6px;}
+.modal-head .close:hover{background:var(--c-primary-tint);}
+.modal-sub{font-size:12.5px;color:var(--c-muted);margin-bottom:18px;}
+.modal-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.modal-kpis .kpi{padding:12px;}
+.modal-kpis .kpi .val{font-size:20px;}
+.modal-kpis .kpi .lbl{font-size:11px;}
+.impersonate-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff6e0;border-bottom:1px solid var(--c-accent);color:#5c4a00;padding:10px 32px;font-size:13px;font-weight:600;}
+.impersonate-banner.hidden{display:none;}
+.impersonate-banner button{flex-shrink:0;}
+@media (max-width:760px){
+  #login{flex-direction:column;} .login-visual{display:none;}
+  #app{flex-direction:column;} .sidebar{width:100%;height:auto;position:relative;flex-direction:row;align-items:center;overflow-x:auto;}
+  .sidebar .brand{padding:10px 12px;border-bottom:none;}
+  .sidebar .brand>span:not(.logo-plate){display:none;}
+  .sidebar .who{display:none;} .sidebar nav{display:flex;padding:8px;}
+  main{padding:18px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="login">
+  <div class="login-visual">
+    <div class="brandmark"><span class="logo-plate"><img src="/liyema-logo.png" alt="Liyema Consulting"></span> LIYEMA CONSULTING GROUP</div>
+    <h2>One place to track every role, submission and placement.</h2>
+    <p>Real accounts, real data from Squarelink — see which roles need candidates, which are stalling, and how submissions are progressing.</p>
+  </div>
+  <div class="login-panel">
+    <div class="login-card">
+      <div class="logo-plate login-card-logo"><img src="/liyema-logo.png" alt="Liyema Consulting"></div>
+      <h1>Partners Dashboard</h1>
+      <div id="loginModePartner">
+        <p class="sub">Sign in with your Liyema partner account.<br>New here? Ask your Liyema contact to add you — accounts are admin-created, not self-signup.</p>
+        <button class="submit" onclick="netlifyIdentity.open('login')">Sign in</button>
+        <div class="login-loading hidden" id="loginLoading">Signing you in…</div>
+        <div class="login-note">
+          🔒 This is real authentication via Netlify Identity — your own password, real password reset, real per-account access. Admins create partner accounts from inside the dashboard once signed in.
+        </div>
+        <p class="sub" style="margin-top:14px;"><a href="#" onclick="showStaffLoginForm();return false;">Liyema Team member? Sign in here</a></p>
+      </div>
+      <div id="loginModeStaff" class="hidden">
+        <p class="sub">Sign in with your Liyema Team account.</p>
+        <form onsubmit="return staffLogin(event)">
+          <div class="fld"><label>Email</label><input type="email" id="staffLoginEmail" placeholder="name@liyemagroup.com" required></div>
+          <div class="fld" style="margin-top:10px;"><label>Password</label><input type="password" id="staffLoginPassword" required></div>
+          <button class="submit" type="submit" style="margin-top:14px;">Sign in</button>
+        </form>
+        <div id="staffLoginError" class="hidden" style="color:#c0392b;font-size:13px;margin-top:10px;"></div>
+        <div class="login-loading hidden" id="staffLoginLoading">Signing you in…</div>
+        <p class="sub" style="margin-top:14px;"><a href="#" onclick="showStaffForgotForm();return false;">Forgot password?</a> &nbsp;·&nbsp; <a href="#" onclick="showPartnerLoginForm();return false;">Recruiting partner? Sign in here</a></p>
+      </div>
+      <div id="loginModeStaffForgot" class="hidden">
+        <p class="sub">Reset your Liyema Team password using your recovery question — no email needed.</p>
+        <form id="staffForgotEmailForm" onsubmit="return staffForgotSubmitEmail(event)">
+          <div class="fld"><label>Email</label><input type="email" id="staffForgotEmail" placeholder="name@liyemagroup.com" required></div>
+          <button class="submit" type="submit" style="margin-top:14px;">Continue</button>
+        </form>
+        <form id="staffForgotAnswerForm" class="hidden" onsubmit="return staffForgotSubmitAnswer(event)">
+          <div class="fld"><label id="staffForgotQuestionLabel">Security question</label><input type="text" id="staffForgotAnswer" placeholder="Your answer" required></div>
+          <div class="fld" style="margin-top:10px;"><label>New password</label><input type="password" id="staffForgotNewPassword" minlength="8" placeholder="min 8 characters" required></div>
+          <button class="submit" type="submit" style="margin-top:14px;">Reset password</button>
+        </form>
+        <div id="staffForgotError" class="hidden" style="color:#c0392b;font-size:13px;margin-top:10px;"></div>
+        <div id="staffForgotSuccess" class="hidden" style="color:#1e7e34;font-size:13px;margin-top:10px;"></div>
+        <div class="login-loading hidden" id="staffForgotLoading">Working…</div>
+        <p class="sub" style="margin-top:14px;"><a href="#" onclick="showStaffLoginForm();return false;">Back to sign in</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app" class="hidden">
+  <aside class="sidebar">
+    <div class="brand"><span class="logo-plate"><img src="/liyema-logo.png" alt="Liyema Consulting"></span><span>Liyema Partners<span class="sub">Consulting Group</span></span></div>
+    <nav id="tabsNav"></nav>
+    <div class="ext"><a href="https://squarelink.co.za/recruiter/jobs" target="_blank" rel="noopener"><span>↗</span> Open Squarelink</a></div>
+    <div class="who">
+      <div class="name" id="whoName"></div>
+      <div class="role" id="whoRole"></div>
+      <button onclick="doLogout()">Log out</button>
+    </div>
+  </aside>
+  <div class="content">
+    <div class="content-topbar">
+      <div>
+        <h1 id="pageTitle">Overview</h1>
+        <div class="databar">Squarelink snapshot: <b id="dataPulledAt">—</b> · <span id="dataScope"></span></div>
+      </div>
+      <span class="refresh-pill" onclick="refreshDataPill()">↻ Refresh data</span>
+    </div>
+    <div class="impersonate-banner hidden" id="impersonateBanner"></div>
+    <main id="main"><div class="empty">Loading…</div></main>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="partnerDetailModal" onclick="if(event.target===this) closePartnerDetail()">
+  <div class="modal-box" id="partnerDetailBox"></div>
+</div>
+
+<script>
+/* =========================================================
+   AUTH — Netlify Identity (real accounts, real passwords)
+   ========================================================= */
+let currentUser = null;   // Netlify Identity user object
+let isAdminUser = false;
+let isStaffUser = false;  // internal Liyema team -- same visibility as admin, no management rights
+let activeTab = null;
+let impersonatingPartner = null; // admin "View as partner" mode -- client-side, read-only preview built from
+                                  // data the admin already has full access to. Not a real session/token swap:
+                                  // Netlify Identity has no supported way to mint another user's auth token, so
+                                  // write actions (log a submission, feedback, profile edits) stay disabled
+                                  // while previewing to avoid misattributing data to the admin's real account.
+function isPartnerView() { return (!isAdminUser && !isStaffUser) || !!impersonatingPartner; }
+function hasFullVisibility() { return isAdminUser || isStaffUser; } // admin or internal Liyema team
+function effectivePartnerId() { return impersonatingPartner ? impersonatingPartner.id : currentUser.id; }
+function effectivePartnerCreatedAt() { return impersonatingPartner ? impersonatingPartner.createdAt : currentUser.created_at; }
+function viewAsPartner(id) {
+  const p = PARTNERS.find((x) => x.id === id);
+  if (!p) return;
+  impersonatingPartner = p;
+  renderShell();
+}
+function exitImpersonation() {
+  impersonatingPartner = null;
+  renderShell();
+}
+function renderImpersonationBanner() {
+  const el = document.getElementById('impersonateBanner');
+  if (!el) return;
+  if (impersonatingPartner) {
+    el.classList.remove('hidden');
+    el.innerHTML = `<span>👁️ Viewing as <b>${escapeAttr(impersonatingPartner.name)}</b> (${escapeAttr(impersonatingPartner.email)}) — read-only preview of what this partner sees. Logging submissions, feedback and profile edits are disabled.</span><button class="btn ghost sm" onclick="exitImpersonation()">Exit to admin view</button>`;
+  } else {
+    el.classList.add('hidden');
+    el.innerHTML = '';
+  }
+}
+
+/* ---------------------------------------------------------------
+   Staff login bypass (5 internal "Liyema Team" accounts only) --
+   see netlify/functions/_shared/staffAuth.js for the full story on
+   why this exists. Partners and admins never touch this path; they
+   keep using the real netlifyIdentity widget below unchanged.
+   --------------------------------------------------------------- */
+let customStaffToken = null;
+let customStaffUser = null;
+const STAFF_SESSION_KEY = 'liyemaStaffSession';
+
+function decodeStaffTokenPayload(token) {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3 || parts[0] !== 'liyemastaff') return null;
+    let s = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    return JSON.parse(atob(s));
+  } catch (e) { return null; }
+}
+
+function hideAllLoginModes() {
+  ['loginModePartner', 'loginModeStaff', 'loginModeStaffForgot'].forEach((id) => document.getElementById(id).classList.add('hidden'));
+}
+function showStaffLoginForm() {
+  hideAllLoginModes();
+  document.getElementById('loginModeStaff').classList.remove('hidden');
+}
+function showPartnerLoginForm() {
+  hideAllLoginModes();
+  document.getElementById('loginModePartner').classList.remove('hidden');
+}
+function showStaffForgotForm() {
+  hideAllLoginModes();
+  document.getElementById('loginModeStaffForgot').classList.remove('hidden');
+  // Reset the two-step form back to step 1 each time it's opened.
+  document.getElementById('staffForgotEmailForm').classList.remove('hidden');
+  document.getElementById('staffForgotAnswerForm').classList.add('hidden');
+  document.getElementById('staffForgotError').classList.add('hidden');
+  document.getElementById('staffForgotSuccess').classList.add('hidden');
+  document.getElementById('staffForgotAnswer').value = '';
+  document.getElementById('staffForgotNewPassword').value = '';
+}
+
+let staffForgotEmailInFlight = '';
+
+async function staffForgotSubmitEmail(e) {
+  e.preventDefault();
+  const email = document.getElementById('staffForgotEmail').value.trim();
+  const errEl = document.getElementById('staffForgotError');
+  const loadingEl = document.getElementById('staffForgotLoading');
+  errEl.classList.add('hidden');
+  loadingEl.classList.remove('hidden');
+  try {
+    const res = await fetch('/api/staff-forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    let data = null;
+    try { data = await res.json(); } catch (e2) { /* no body */ }
+    if (!res.ok) throw new Error((data && data.error) || 'Could not start password reset.');
+    staffForgotEmailInFlight = email;
+    document.getElementById('staffForgotQuestionLabel').textContent = data.question;
+    document.getElementById('staffForgotEmailForm').classList.add('hidden');
+    document.getElementById('staffForgotAnswerForm').classList.remove('hidden');
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    loadingEl.classList.add('hidden');
+  }
+  return false;
+}
+
+async function staffForgotSubmitAnswer(e) {
+  e.preventDefault();
+  const answer = document.getElementById('staffForgotAnswer').value;
+  const newPassword = document.getElementById('staffForgotNewPassword').value;
+  const errEl = document.getElementById('staffForgotError');
+  const successEl = document.getElementById('staffForgotSuccess');
+  const loadingEl = document.getElementById('staffForgotLoading');
+  errEl.classList.add('hidden');
+  successEl.classList.add('hidden');
+  loadingEl.classList.remove('hidden');
+  try {
+    const res = await fetch('/api/staff-forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: staffForgotEmailInFlight, step: 'answer', answer, newPassword }),
+    });
+    let data = null;
+    try { data = await res.json(); } catch (e2) { /* no body */ }
+    if (!res.ok) throw new Error((data && data.error) || 'Could not reset password.');
+    document.getElementById('staffForgotAnswerForm').classList.add('hidden');
+    successEl.textContent = 'Password reset. You can sign in now with your new password.';
+    successEl.classList.remove('hidden');
+    document.getElementById('staffLoginEmail').value = staffForgotEmailInFlight;
+    document.getElementById('staffLoginPassword').value = '';
+    setTimeout(showStaffLoginForm, 1800);
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    loadingEl.classList.add('hidden');
+  }
+  return false;
+}
+
+async function staffLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('staffLoginEmail').value.trim();
+  const password = document.getElementById('staffLoginPassword').value;
+  const errEl = document.getElementById('staffLoginError');
+  const loadingEl = document.getElementById('staffLoginLoading');
+  errEl.classList.add('hidden');
+  loadingEl.classList.remove('hidden');
+  try {
+    const res = await fetch('/api/staff-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    let data = null;
+    try { data = await res.json(); } catch (e2) { /* no body */ }
+    if (!res.ok) throw new Error((data && data.error) || 'Sign in failed.');
+    onStaffLoggedIn(data.token, data.user);
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    loadingEl.classList.add('hidden');
+  }
+  return false;
+}
+
+function onStaffLoggedIn(token, user) {
+  customStaffToken = token;
+  customStaffUser = user;
+  try { localStorage.setItem(STAFF_SESSION_KEY, JSON.stringify({ token, user })); } catch (e) { /* storage unavailable */ }
+  currentUser = { id: user.id, email: user.email, user_metadata: { full_name: user.name }, app_metadata: { roles: ['staff'] } };
+  isAdminUser = false;
+  isStaffUser = true;
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('whoName').textContent = user.name || user.email;
+  document.getElementById('whoRole').textContent = 'Liyema Team';
+  loadAll().then(renderShell);
+}
+
+function restoreStaffSession() {
+  try {
+    const raw = localStorage.getItem(STAFF_SESSION_KEY);
+    if (!raw) return false;
+    const { token, user } = JSON.parse(raw);
+    const payload = decodeStaffTokenPayload(token);
+    if (!payload || !payload.exp || Date.now() > payload.exp) {
+      localStorage.removeItem(STAFF_SESSION_KEY);
+      return false;
+    }
+    onStaffLoggedIn(token, user);
+    return true;
+  } catch (e) { return false; }
+}
+
+async function authFetch(url, opts = {}) {
+  if (customStaffToken) {
+    // credentials: 'omit' -- staff auth is entirely token-based and never
+    // needs cookies. Sending them was found (live) to let a leftover Netlify
+    // Identity cookie in the browser silently override this explicit staff
+    // token server-side, so they're deliberately left out here.
+    const res = await fetch(url, {
+      ...opts,
+      credentials: 'omit',
+      headers: { ...(opts.headers || {}), Authorization: `Bearer ${customStaffToken}`, 'Content-Type': 'application/json' },
+    });
+    let data = null;
+    try { data = await res.json(); } catch (e) { /* no body */ }
+    if (res.status === 401) { doLogout(); throw new Error('Your session expired — please sign in again.'); }
+    if (!res.ok) throw new Error((data && data.error) || `Request failed (${res.status})`);
+    return data;
+  }
+  const user = netlifyIdentity.currentUser();
+  if (!user) throw new Error('Not logged in');
+  const token = await user.jwt(); // refreshes if expired
+  const res = await fetch(url, {
+    ...opts,
+    headers: { ...(opts.headers || {}), Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  });
+  let data = null;
+  try { data = await res.json(); } catch (e) { /* no body */ }
+  if (!res.ok) throw new Error((data && data.error) || `Request failed (${res.status})`);
+  return data;
+}
+
+netlifyIdentity.on('init', (user) => {
+  if (user) onLoggedIn(user);
+  else restoreStaffSession();
+});
+netlifyIdentity.on('login', (user) => {
+  onLoggedIn(user);
+  netlifyIdentity.close();
+});
+netlifyIdentity.on('logout', () => {
+  currentUser = null;
+  isAdminUser = false;
+  isStaffUser = false;
+  impersonatingPartner = null;
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('login').classList.remove('hidden');
+});
+netlifyIdentity.init();
+
+function doLogout() {
+  if (customStaffToken) {
+    customStaffToken = null;
+    customStaffUser = null;
+    try { localStorage.removeItem(STAFF_SESSION_KEY); } catch (e) { /* storage unavailable */ }
+    currentUser = null;
+    isAdminUser = false;
+    isStaffUser = false;
+    impersonatingPartner = null;
+    document.getElementById('app').classList.add('hidden');
+    document.getElementById('login').classList.remove('hidden');
+    return;
+  }
+  netlifyIdentity.logout();
+}
+
+async function onLoggedIn(user) {
+  currentUser = user;
+  const roles = (user.app_metadata && user.app_metadata.roles) || [];
+  isAdminUser = roles.includes('admin');
+  isStaffUser = roles.includes('staff');
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('whoName').textContent = (user.user_metadata && user.user_metadata.full_name) || user.email;
+  document.getElementById('whoRole').textContent = isAdminUser ? 'Liyema Admin' : (isStaffUser ? 'Liyema Team' : 'Recruiting Partner');
+  await loadAll();
+  renderShell();
+}
+
+/* =========================================================
+   DATA — fetched live from Netlify Functions (Blobs-backed)
+   ========================================================= */
+let ROLES = [];
+let SUBMISSIONS = [];
+let FEEDBACK = [];
+let PARTNERS = [];       // admin/staff only — from Identity via /api/partners (roles.includes('partner'))
+let STAFF = [];          // admin/staff only — same endpoint, filtered to roles.includes('staff')
+let DATA_PULLED_AT = null;
+let SYNC_CONFIGURED = null; // admin only — from /api/settings-meta
+let REFRESH_REQUEST = null; // admin only — from /api/settings-meta
+const TODAY = new Date();
+
+/* =========================================================
+   CLIENT PULSE -- manual snapshot (2026-07-24)
+   Provided by the admin as a one-off PDF export of a separate
+   "Squarelink Pipeline Dashboard" that isn't live-connected yet.
+   Once that dashboard is running directly against Squarelink, this
+   whole block should be replaced with a real data pull -- for now
+   it's static content, with day-counts recalculated live off today's
+   date relative to the snapshot date so they don't go stale in the UI.
+   ========================================================= */
+const CLIENT_PULSE_SNAPSHOT_DATE = new Date('2026-07-24');
+function cpLiveDays(daysAtSnapshot) { return daysAtSnapshot + daysBetween(CLIENT_PULSE_SNAPSHOT_DATE, TODAY); }
+const CLIENT_PULSE = {
+  kpis: { activeStages: 7, highRisk: 5, over30d: 6, awaitingClientFeedback: 81 },
+  priorityQueue: [
+    { candidate: 'Lehlohonolo Motho', flagged: true, role: 'Deal Mgmt – Manager · EY', stage: 'Reviewing', daysAtSnapshot: 96, blocker: 'Stale duplicate record' },
+    { candidate: 'Graham McLeish', flagged: true, role: 'Sr Mgr / Assoc. Director (2 roles) · EY', stage: 'Reviewing', daysAtSnapshot: 96, blocker: 'No movement since April' },
+    { candidate: 'Xoliswa Makhunga', flagged: false, role: 'Deal Mgmt – Manager · EY', stage: 'Reviewing', daysAtSnapshot: 96, blocker: 'Stale — but has a newer app too' },
+    { candidate: 'Kgadi Kutumela', flagged: true, role: 'Service Desk Coordinator · Skynet Worldwide Express', stage: 'Shortlisted', daysAtSnapshot: 91, blocker: 'No email trail — now 86 days, unchanged in 2+ weeks' },
+    { candidate: 'Nqubeko Zibani', flagged: true, role: 'Deal Mgmt – Manager · EY', stage: 'Shortlisted', daysAtSnapshot: 35, blocker: 'Awaiting EY interview date — now 28 days' },
+    { candidate: 'Lehlohonolo Motho', flagged: true, role: 'Sr Mgr | Deal Mgmt · EY', stage: 'Shortlisted', daysAtSnapshot: 35, blocker: 'Awaiting EY interview date — now 28 days' },
+    { candidate: 'Mikayla Barker', flagged: false, role: 'Deal Mgmt – Manager · EY', stage: '1st Interview', daysAtSnapshot: 16, blocker: 'Progressing — interview booked', isNew: true },
+  ],
+  clientBacklog: [
+    { clientRole: 'EY — Employee Benefits & Comp. Sr Mgr', flagged: true, candidates: 'Vincent Khoza, Mpho Kuenane (submitted 7/8) + Xoliswa Makhunga, Shirley de Klerk, Tlou Sam Ramphele (submitted 7/1)', submitted: '2026-07-01 – 07-08', daysAtSnapshot: 28, blocker: 'Growing batch, 3 weeks with zero response' },
+    { clientRole: 'EY — Deal Mgmt (Manager)', flagged: true, candidates: 'Graham McLeish, Sibongakonke Kheswa, Simone Smith, Aleh Kum', submitted: '2026-07-01', daysAtSnapshot: 28, blocker: '3 weeks with no movement — req open since April' },
+    { clientRole: 'EY — Cloud Security Engineer (new)', flagged: true, candidates: 'Eniola Sonubi (submitted 6/8) + Mxolisi Sakela (1st Interview, 7/7)', submitted: '2026-06-08', daysAtSnapshot: 51, blocker: '44-day-old submission just discovered', isNew: true },
+    { clientRole: 'Accenture — Business Analyst / Scrum Master-PM / Engineering Lead', flagged: true, candidates: 'Mary-Anne Shobane, Lucky Selby Lushaba, Ngonidzashe Mukaronda, Rajan Govender', submitted: '2026-06-01 – 06-04', daysAtSnapshot: 57, blocker: 'Still unupdated — now 3+ weeks since feedback was given' },
+    { clientRole: 'Accenture — Senior Enterprise Architect', flagged: false, candidates: 'Rajan Govender', submitted: '2026-07-01', daysAtSnapshot: 28, blocker: 'Genuinely still pending client feedback' },
+    { clientRole: 'SNG (Dept. of Labour / COGTA-MISA-DBSA) — Sr Mgr: PM Support', flagged: true, candidates: '7 candidates incl. Senior PM MBA DPSA, Executive Manager PM Dept-Labour, PM Consultant MBA COGTA-MISA-DBSA', submitted: '2026-06-19', daysAtSnapshot: 40, blocker: 'Unchanged since last check — over a month now' },
+    { clientRole: 'Cummins — On Site Service Technician II (new)', flagged: false, candidates: 'Jackson Malatsi (submitted 7/10), Heather Kgomo (submitted 7/9)', submitted: '2026-07-09 – 07-10', daysAtSnapshot: 20, blocker: 'New req, within normal turnaround', isNew: true },
+  ],
+  debriefs: [
+    {
+      candidate: 'Mxolisi', role: 'Cloud Security Engineer · EY / PlusB (Pepkor Bank)', outcome: 'Positive outcome',
+      summary: 'Mxolisi gave very positive feedback after the interview. He felt well prepared and answered both the technical and behavioural questions confidently, and the panel responded positively throughout.',
+      note: 'Likely the same candidate referenced as "Mxolisi Sakela" in the EY Cloud Security Engineer backlog row above — the one who already reached 1st Interview while Eniola Sonubi\'s application stalled.',
+      panel: ['Himesh — Enterprise/Architecture Lead', 'Delivery Lead', 'Core Banking Platform Owner/Architect'],
+      questions: [
+        { q: 'Explain your technical approach to delivery.', points: ['Iterative delivery and delivering value incrementally.', 'Avoiding technical debt.', 'Building solutions using the right architecture and principles so they can scale in the future.', 'Managing stakeholder expectations while balancing business needs with good engineering practices.'] },
+        { q: 'What do you know about our business?', points: ['The organisation is building a new bank.', 'Pepkor acquired the business to develop the bank.', 'They are currently working towards obtaining their banking licence.'] },
+        { q: 'Why did you leave Accenture?', points: ['His contract at Accenture came to an end.', 'Since then, he has been consulting through his professional network.', 'He is currently assisting Woodwards with defining their data ecosystem components.'] },
+        { q: 'Are you available immediately?', points: ['He works on project-based consulting engagements.', 'He is therefore available to start immediately.'] },
+      ],
+      technicalAssessment: 'The technical discussion went extremely well — Mxolisi gave such detailed answers that one interviewer stopped him because they\'d heard enough and were satisfied with his level of knowledge. His responses showed strong understanding of iterative delivery, stakeholder management, scalable solution design, and technical best practices.',
+      candidateFeedback: 'Mxolisi believes the interview went very well. He felt confident throughout and believes his experience aligned well with the client\'s requirements. He also felt his explanation of his availability and recent consulting work was well received. Himesh appeared genuinely impressed with his responses.',
+    },
+  ],
+  recommendations: [
+    { priority: 1, title: 'Set a triage SLA for new applications', body: 'The \'New\' backlog has grown across both snapshots (273→295), concentrated on the same few accounts. Without a standing rule — e.g. every new CV reviewed within 3 business days — backlog age stays invisible until it\'s already a delay. Make aging the exception, not the norm.', tag: 'Process · pipeline-wide' },
+    { priority: 1, title: 'Give major accounts a named backup contact', body: 'The EY Deal Management stall traces to one traveling hiring partner (Marius) being the sole approver. A single point of failure on the client side will keep recurring on any account structured this way — worth asking each major client for a secondary approver who can act when the primary is unavailable.', tag: 'Account structure · EY and others' },
+    { priority: 2, title: 'Run a monthly Squarelink hygiene pass', body: 'Duplicate active records for the same person across roles (Motho, Makhunga, McLeish) and stage labels that go stale after real-world events (Accenture feedback given 6/25, unreflected a month later) both point to the same fix: a short monthly reconciliation between Squarelink stages and actual outcomes, not a one-off cleanup.', tag: 'Data quality · recurring' },
+    { priority: 2, title: 'Put a recurring health check-in on every major account', body: 'Signals like the possible Accenture budget dispute and SNG\'s unanswered \'will review and revert\' only surfaced incidentally through email and meeting mining. A scheduled quarterly touchpoint per major account would catch budget or satisfaction issues before the pipeline goes quiet, instead of after.', tag: 'Client relationships · EY, Accenture, BitCo, SNG, Cummins' },
+    { priority: 3, title: 'Turn meeting action items into a tracked list', body: 'The Accenture Squarelink-update task was assigned in a 6/25 meeting and still wasn\'t done a month later — the recap alone didn\'t enforce follow-through. A simple shared action tracker fed from Read.ai output (even a spreadsheet) would catch this kind of drop before a client\'s feedback effectively goes unrecorded for weeks.', tag: 'Internal accountability · Read.ai workflow' },
+    { priority: 3, title: 'Document the Rose → Lisedi handover as a relationship transfer', body: 'Rose currently holds the context on the strained EY account. Rather than an informal briefing, a written transfer brief — open items, contact history, known constraints like Marius\'s travel pattern — reduces the risk of losing that context the moment the handover happens.', tag: 'Account continuity · starts 1 August' },
+    { priority: 4, title: 'Start tracking placement retention as a leading indicator', body: 'Right now client sentiment is only visible when something has already gone quiet or shown up in a meeting aside. A simple 30/90/180-day retention check after each placement gives an earlier, structured read on client satisfaction instead of inferring it after the fact.', tag: 'Client satisfaction · 30/90/180-day check' },
+  ],
+  otherNotes: [
+    { title: 'BitCo Telecom — NOC Agent / NOC Agent (Voice) + new Billing Administrator req', body: 'Unchanged since the last pull — 2 placements made, but the 6/3 batch is still sitting untriaged at "New" behind the newer Round 2 batch. A new job spec, Billing Administrator, was submitted by BitCo on 2026-07-13 and is pending review — worth confirming this isn\'t adding to the same backlog pattern.', action: 'Bulk-close the stale NOC Agent batch, and make sure the new Billing Administrator req gets an initial response faster than the NOC Agent one did.' },
+    { title: 'EY — FAAS Manager (new role, 5 candidates untriaged)', body: 'A new role not seen before — Nikita Timalchund, Dinah Mwiria, Jaco Faber, Sheetal Dave, and Japhter Phiri all applied 2026-07-09 and are still sitting at "New," 13 days untouched.', action: 'Triage this batch this week — 13 days untouched on a client where other reqs (Deal Management, Employee Benefits) are already under strain risks EY feeling under-served across the board, not just on one role.' },
+    { title: 'Top-of-funnel backlog', body: '295 "New" applications never triaged, up from 273 two weeks ago. The bulk is still the Accenture Microsoft IAM RFP Talent Pool batch, now 3 weeks old rather than 5 days — it has crossed from "fresh queue" into genuine backlog territory.', action: 'This one needed screening capacity two weeks ago and still doesn\'t have it — prioritize this over new queues like the EY FAAS Manager batch, since it\'s now the oldest unscreened backlog in the system.' },
+    { title: 'Data-quality flag — confirmed persistent, and now also moving', body: 'The Squarelink dashboard "Offer" tile has changed from 6 to 3 since the last pull, but the Applications-level filter for status "Offered" still returns 0 candidates, as it has on every check so far. So the tile isn\'t frozen/hard-coded as first suspected — it\'s reading from a different, real source than the Applications filter, it just never reconciles with the Applications-level status filter recruiters actually use day to day.', action: 'Still worth reporting to whoever maintains Squarelink — not as a stale/frozen tile, but as two different counting methods that will never agree.' },
+    { title: 'Data-quality flag — new: a large batch shrank without any stage movement', body: 'The Accenture "Microsoft Identity & Access Management (IAM) RFP Talent Pool" batch dropped from ~275 candidates to 121 between 2026-07-22 and 2026-07-24, with the remaining 121 still sitting at "New." Total applications system-wide dropped from 453 to 310 and new CVs from 295 to 174 over the same two days. Nothing in the applicant workflow stage suggests these were screened or rejected — they appear to have simply been removed.', action: 'Confirm with whoever has admin access whether this was a deliberate cleanup/de-dup or an unintended bulk deletion.' },
+    { title: 'New business since the last pull — fast-moving, no delay yet', body: 'Accenture opened 6 new roles on 2026-07-23 (SAP Program/Project Manager, SAP FICO/S4HANA Consultant, SOC/Cybersecurity Specialist, Senior SAP MDM Consultant, SAP HCM Specialist, SAP DRC/e-Invoicing Finance Specialist) — each already has a candidate Submitted to Client within 1 day. Cummins also opened 3 new roles (Diesel Mechanic, HSE Officer – Durban, HSE Officer – Middelburg) with 12 candidates between the two HSE Officer roles, 10 already Submitted to Client within 1–4 days.', action: 'No action needed yet — flagging so these don\'t get missed if they stall next week. Worth a quick client health check-in with both Accenture and Cummins while they\'re actively engaged.' },
+  ],
+  meetingIntel: [
+    { title: 'Root cause confirmed for the EY interview-date delays', body: 'The 2026-07-20 "Rose Briefing" states the hiring partner, Marius, travels frequently, and that this is what\'s been slowing interview scheduling on the EY Deal Management account — this is the underlying reason Zibani and Motho have been stuck at Shortlisted, not a lost thread or bad follow-up.', confirmed: true },
+    { title: 'Recruiting continuity risk incoming', body: 'The same briefing covered Rose handing over her responsibilities to an incoming successor, Lisedi, starting 1 August. Rose appears connected to the EY relationship and the recruitment-delay discussion, so a handover mid-way through an already-strained account is worth watching over the next few weeks.', confirmed: true },
+    { title: 'Possible Accenture budget dispute — unconfirmed', body: 'The 2026-07-20 Alignment meeting notes that some consultants may have been "removed for being over budget," with Lebogang tasked to confirm this with the hiring manager. Two follow-up Outlook searches didn\'t turn up a dedicated thread with more detail — flagged here as unconfirmed rather than treated as fact.', confirmed: false },
+    { title: 'Personnel/duty-of-care flag — unconfirmed', body: 'The 2026-07-21 (07:56) Status Meeting mentions "a personnel risk arising from an employee resignation tied to travel and safety complaints." No dedicated Outlook thread surfaced with the specifics — worth asking about directly rather than treating as resolved.', confirmed: false },
+  ],
+};
+
+async function loadAll(showSpinner) {
+  const main = document.getElementById('main');
+  if (showSpinner && main) main.innerHTML = '<div class="empty">Refreshing…</div>';
+  try {
+    const [rolesRes, subsRes, fbRes] = await Promise.all([
+      authFetch('/api/roles'),
+      authFetch('/api/submissions'),
+      authFetch('/api/feedback'),
+    ]);
+    ROLES = rolesRes.roles || [];
+    DATA_PULLED_AT = rolesRes.dataPulledAt;
+    SUBMISSIONS = subsRes || [];
+    FEEDBACK = fbRes || [];
+    if (hasFullVisibility()) {
+      const identityUsers = await authFetch('/api/partners');
+      PARTNERS = identityUsers.filter((u) => (u.roles || []).includes('partner'));
+      STAFF = identityUsers.filter((u) => (u.roles || []).includes('staff'));
+      try {
+        const meta = await authFetch('/api/settings-meta');
+        SYNC_CONFIGURED = meta.syncSecretConfigured;
+        REFRESH_REQUEST = meta.refreshRequest;
+      } catch (e) { SYNC_CONFIGURED = null; }
+    }
+    document.getElementById('dataPulledAt').textContent = DATA_PULLED_AT ? new Date(DATA_PULLED_AT).toLocaleString('en-ZA') : 'not loaded yet';
+    if (activeTab) switchTab(activeTab);
+  } catch (e) {
+    if (main) main.innerHTML = `<div class="error-box">Could not load data: ${e.message}</div>`;
+  }
+}
+
+/* =========================================================
+   HELPERS (same logic as the offline prototype, now over live data)
+   ========================================================= */
+function daysBetween(d1, d2) { return Math.round((d2 - d1) / (1000 * 60 * 60 * 24)); }
+function fmt(dateStr) { const d = new Date(dateStr); return d.toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' }); }
+function stagesText(stages) {
+  const keys = Object.keys(stages || {});
+  if (!keys.length) return '—';
+  return keys.map((k) => `${k} ${stages[k]}`).join(', ');
+}
+function hasClientProgress(role) {
+  const s = role.stages || {};
+  return !!(s['Submitted'] || s['Shortlisted'] || s['1st Interview'] || s['Interview 1'] || s['Offer'] || s['Employed'] || (role.cvsToClient && role.cvsToClient > 0));
+}
+function isInterviewStage(key) { return /interview/i.test(key); }
+function hasInterviewProgress(role) {
+  const s = role.stages || {};
+  return Object.keys(s).some((k) => isInterviewStage(k) && s[k] > 0);
+}
+function roleStats(role) {
+  const daysOpen = daysBetween(new Date(role.dateOpened), TODAY);
+  const progress = hasClientProgress(role);
+  const s = role.stages || {};
+  const placed = !!s['Employed'];
+  const offerStage = !!s['Offer'];
+  const interviewing = hasInterviewProgress(role);
+  const needsSubmissions = role.status === 'Open' && !progress && daysOpen >= 7;
+  // A role with a candidate currently at interview stage is actively progressing --
+  // it should never be flagged "On Hold" just because it's been open a while.
+  const stalled = role.status === 'Open' && progress && !placed && !offerStage && !interviewing && daysOpen >= 25;
+  return { daysOpen, progress, placed, offerStage, interviewing, needsSubmissions, stalled };
+}
+function roleFlagCategory(role) {
+  const s = roleStats(role);
+  if (role.status !== 'Open') return { key: 'closed', label: 'Closed', color: '#8a95a6' };
+  if (s.placed) return { key: 'placed', label: 'Placement made', color: '#1e7a4c' };
+  if (s.needsSubmissions) return { key: 'needs', label: 'Needs submissions', color: '#c0392b' };
+  if (s.offerStage) return { key: 'offer', label: 'Offer pending', color: '#1c5fa8' };
+  if (s.interviewing) return { key: 'interviewing', label: 'Interviewing', color: '#0f7a72' };
+  if (s.stalled) return { key: 'stalled', label: 'On Hold', color: '#a9720c' };
+  return { key: 'progress', label: 'In progress', color: '#1c5fa8' };
+}
+function roleFlagTag(role) {
+  const cat = roleFlagCategory(role);
+  const cls = { closed: 'closedflag', placed: 'win', needs: 'needs', stalled: 'stalled', offer: 'active', interviewing: 'interviewing', progress: 'active' }[cat.key];
+  return `<span class="flag ${cls}">${cat.label}</span>`;
+}
+function mySubmissions(partnerId) { return SUBMISSIONS.filter((s) => s.partnerId === partnerId); }
+function partnerLastActivity(partnerId) {
+  const subs = mySubmissions(partnerId);
+  if (!subs.length) return null;
+  return subs.map((s) => new Date(s.date)).sort((a, b) => b - a)[0];
+}
+function openRoles() { return ROLES.filter((r) => r.status === 'Open'); }
+function clientList(roles) { return [...new Set(roles.map((r) => r.client))].sort(); }
+
+/* =========================================================
+   Two distinct sources of "who worked this role" data -- do not conflate them:
+   1) role.submittedBy (from the Squarelink sync) = the internal Liyema
+      recruiter who owns/posted the job listing in Squarelink. It is NOT one
+      of the external partner accounts -- Squarelink has no field that
+      attributes a candidate to a specific partner.
+   2) SUBMISSIONS (native, via the partner-facing "Log a submission" feature
+      and /api/submissions) = real partner-attributed activity, keyed by the
+      partner's actual Netlify Identity id. This is the correct source for
+      any partner-performance feature.
+   ========================================================= */
+function recruiterNames() { return [...new Set(ROLES.map((r) => r.submittedBy).filter(Boolean))].sort(); }
+function rolesByRecruiter(name) { return ROLES.filter((r) => r.submittedBy === name); }
+function recruiterStats(name) {
+  const roles = rolesByRecruiter(name);
+  const openCount = roles.filter((r) => r.status === 'Open').length;
+  const closedCount = roles.filter((r) => r.status !== 'Open').length;
+  const appsSum = roles.reduce((n, r) => n + (r.apps || 0), 0);
+  const cvsSum = roles.reduce((n, r) => n + (r.cvsToClient || 0), 0);
+  return { count: roles.length, openCount, closedCount, appsSum, cvsSum, roles };
+}
+function recruiterActivityRecency() {
+  const names = recruiterNames();
+  const rows = names.map((name) => {
+    const roles = rolesByRecruiter(name);
+    const mostRecent = roles.map((r) => new Date(r.dateOpened)).sort((a, b) => b - a)[0];
+    const daysSince = mostRecent ? daysBetween(mostRecent, TODAY) : null;
+    return { name, roleCount: roles.length, daysSince, status: daysSince === null ? 'Unknown' : (daysSince <= 14 ? 'Active' : 'Quiet') };
+  });
+  return rows.sort((a, b) => (a.daysSince ?? 9999) - (b.daysSince ?? 9999));
+}
+function submissionsForRole(roleId) { return SUBMISSIONS.filter((s) => s.roleId === roleId); }
+function rolePartnerNames(roleId) { return [...new Set(submissionsForRole(roleId).map((s) => s.partnerName).filter(Boolean))]; }
+function partnerSubmissionStats(partner) {
+  const subs = mySubmissions(partner.id);
+  const roleIds = [...new Set(subs.map((s) => s.roleId))];
+  const roles = roleIds.map((id) => ROLES.find((r) => r.id === id)).filter(Boolean);
+  const openCount = roles.filter((r) => r.status === 'Open').length;
+  const closedCount = roles.filter((r) => r.status !== 'Open').length;
+  const sortedSubs = subs.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+  const latest = sortedSubs[0] || null;
+  return { roleCount: roleIds.length, openCount, closedCount, subCount: subs.length,
+    latestStatus: latest ? latest.status : null, latestDate: latest ? latest.date : null };
+}
+
+/* =========================================================
+   PARTNER DETAIL MODAL — click a partner's name on the Partners tab
+   to see every submission they've logged (or that was backfilled from
+   Squarelink history for them), with candidate, role, client, date,
+   status and source, plus their profile info at a glance.
+   ========================================================= */
+function openPartnerDetail(partnerId) {
+  const p = PARTNERS.find((x) => x.id === partnerId);
+  if (!p) return;
+  document.getElementById('partnerDetailBox').innerHTML = renderPartnerDetail(p);
+  document.getElementById('partnerDetailModal').classList.remove('hidden');
+}
+function closePartnerDetail() {
+  document.getElementById('partnerDetailModal').classList.add('hidden');
+}
+function partnerSummaryText(p, subs, stats) {
+  if (!subs.length) {
+    return `${p.name} hasn't logged any submissions yet (joined ${fmt(p.createdAt)}). There's nothing to summarise until their first candidate goes in.`;
+  }
+  const roles = [...new Set(subs.map((s) => s.roleId))].map((id) => ROLES.find((r) => r.id === id)).filter(Boolean);
+  const clients = [...new Set(roles.map((r) => r.client))];
+  const statusCounts = {};
+  subs.forEach((s) => { statusCounts[s.status] = (statusCounts[s.status] || 0) + 1; });
+  const statusOrder = ['Employed', 'Offer', '1st Interview', 'Shortlisted', 'Submitted', 'Rejected'];
+  const statusParts = statusOrder.filter((st) => statusCounts[st]).map((st) => `${statusCounts[st]} ${st.toLowerCase()}`);
+  const bestStage = statusOrder.find((st) => statusCounts[st]) || null;
+  const importedCount = subs.filter((s) => s.source === 'squarelink-backfill').length;
+  const selfLoggedCount = subs.length - importedCount;
+  const last = partnerLastActivity(p.id);
+  const daysSinceLast = last ? daysBetween(last, TODAY) : null;
+
+  const parts = [];
+  parts.push(`<b>${p.name}</b> has logged <b>${stats.subCount} submission${stats.subCount === 1 ? '' : 's'}</b> across <b>${stats.roleCount} role${stats.roleCount === 1 ? '' : 's'}</b>${clients.length ? ` at ${clients.length === 1 ? clients[0] : clients.slice(0, -1).join(', ') + ' and ' + clients[clients.length - 1]}` : ''}.`);
+  if (statusParts.length) parts.push(`Status breakdown: ${statusParts.join(', ')}.`);
+  if (bestStage && (bestStage === 'Employed' || bestStage === 'Offer')) parts.push(`Best outcome so far: <b>${bestStage.toLowerCase()}</b> — worth flagging as a win.`);
+  if (stats.openCount === 0 && stats.roleCount > 0) parts.push(`All ${stats.roleCount} of these roles are now closed — no open submissions currently in play for this partner.`);
+  else if (stats.openCount > 0) parts.push(`${stats.openCount} role${stats.openCount === 1 ? '' : 's'} still open.`);
+  if (importedCount && selfLoggedCount) parts.push(`${selfLoggedCount} logged directly by them, ${importedCount} imported from Squarelink history.`);
+  else if (importedCount && !selfLoggedCount) parts.push(`All of these were imported from Squarelink history — ${p.name} hasn't logged a submission directly through the app yet.`);
+  if (daysSinceLast !== null) parts.push(`Last activity ${daysSinceLast === 0 ? 'today' : daysSinceLast + ' day' + (daysSinceLast === 1 ? '' : 's') + ' ago'}.`);
+  return parts.join(' ');
+}
+function renderPartnerDetail(p) {
+  const subs = mySubmissions(p.id).slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+  const stats = partnerSubmissionStats(p);
+  const last = partnerLastActivity(p.id);
+  const daysSinceJoin = daysBetween(new Date(p.createdAt), TODAY);
+  const lastText = last ? `${fmt(last.toISOString().slice(0, 10))} (${daysBetween(last, TODAY)}d ago)` : `Never (joined ${daysSinceJoin}d ago)`;
+  const summaryText = partnerSummaryText(p, subs, stats);
+
+  const rows = subs.map((s) => {
+    const role = ROLES.find((r) => r.id === s.roleId);
+    const sourceLabel = s.source === 'squarelink-backfill'
+      ? '<span class="muted" title="Imported from Squarelink history rather than logged by you directly">Imported from Squarelink</span>'
+      : '<span class="muted">Logged by partner</span>';
+    return `<tr>
+      <td>${s.candidate}</td>
+      <td>${role ? role.title : '<span class="muted">Unknown role</span>'}</td>
+      <td>${role ? role.client : '<span class="muted">—</span>'}</td>
+      <td>${fmt(s.date)}</td>
+      <td>${s.status}</td>
+      <td>${role ? `<span class="flag ${role.status === 'Open' ? 'win' : 'closedflag'}">${role.status}</span>` : '<span class="muted">—</span>'}</td>
+      <td>${sourceLabel}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="modal-head">
+      <div>
+        <h2>${p.name}</h2>
+        <div class="modal-sub">${p.email} · Joined ${fmt(p.createdAt)}${p.confirmed ? '' : ' · <span class="flag active">Invite pending</span>'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="btn ghost sm" onclick="closePartnerDetail(); viewAsPartner('${p.id}')" title="Preview exactly what ${p.name.replace(/"/g, '&quot;')} sees when they log in -- read-only, no password needed">View as partner</button>
+        <span class="close" onclick="closePartnerDetail()">✕</span>
+      </div>
+    </div>
+    <div class="modal-kpis">
+      <div class="kpi"><div class="val">${stats.subCount}</div><div class="lbl">Total submissions</div></div>
+      <div class="kpi"><div class="val">${stats.roleCount}</div><div class="lbl">Roles submitted to</div></div>
+      <div class="kpi"><div class="val">${stats.openCount} / ${stats.closedCount}</div><div class="lbl">Open / closed roles</div></div>
+      <div class="kpi"><div class="val" style="font-size:13px;">${lastText}</div><div class="lbl">Last activity</div></div>
+    </div>
+    <div class="note-box" style="margin-bottom:18px;line-height:1.6;">${summaryText}</div>
+    <table><thead><tr>
+      <th>Candidate</th><th>Role</th><th>Client</th><th>Date</th><th>Status</th><th>Role status</th><th>Source</th>
+    </tr></thead><tbody>${rows || '<tr><td colspan="7" class="empty">No submissions logged yet for this partner.</td></tr>'}</tbody></table>
+  `;
+}
+const STALE_SOFT_DAYS = 5, STALE_HARD_DAYS = 10;
+function staleOpenRoles(minDays) {
+  return openRoles()
+    .map((r) => ({ role: r, daysOpen: daysBetween(new Date(r.dateOpened), TODAY) }))
+    .filter((x) => (x.role.apps || 0) === 0 && x.daysOpen > minDays)
+    .sort((a, b) => b.daysOpen - a.daysOpen);
+}
+function roleAgeBuckets() {
+  const buckets = [
+    { label: '0\u20135 days', min: 0, max: 5, count: 0 },
+    { label: '6\u201310 days', min: 6, max: 10, count: 0 },
+    { label: '11\u201320 days', min: 11, max: 20, count: 0 },
+    { label: '21\u201340 days', min: 21, max: 40, count: 0 },
+    { label: '40+ days', min: 41, max: Infinity, count: 0 },
+  ];
+  openRoles().forEach((r) => {
+    const d = daysBetween(new Date(r.dateOpened), TODAY);
+    const b = buckets.find((bk) => d >= bk.min && d <= bk.max);
+    if (b) b.count++;
+  });
+  return buckets;
+}
+function partnerActivityRecency() {
+  const rows = PARTNERS.map((p) => {
+    const last = partnerLastActivity(p.id);
+    const daysSince = last ? daysBetween(last, TODAY) : null;
+    const subCount = mySubmissions(p.id).length;
+    return { name: p.name, subCount, daysSince, status: daysSince === null ? 'No activity yet' : (daysSince <= 14 ? 'Active' : 'Quiet') };
+  });
+  return rows.sort((a, b) => (a.daysSince ?? 9999) - (b.daysSince ?? 9999));
+}
+function generateWeeklySummary() {
+  if (!PARTNERS.length) {
+    return 'No partner accounts yet \u2014 once partners are added and start logging submissions via "Log a submission", this panel will auto-generate top partners, stuck roles, and recently closed roles straight from live data.';
+  }
+  const statsRows = PARTNERS.map((p) => ({ name: p.name, ...partnerSubmissionStats(p) })).sort((a, b) => b.subCount - a.subCount);
+  const active = statsRows.filter((p) => p.subCount > 0);
+  const top = active.slice(0, 3);
+  const stale10 = staleOpenRoles(STALE_HARD_DAYS);
+  const stale5 = staleOpenRoles(STALE_SOFT_DAYS).filter((x) => x.daysOpen <= STALE_HARD_DAYS);
+  const recentlyClosed = ROLES.filter((r) => r.status !== 'Open' && r.deadline && daysBetween(new Date(r.deadline), TODAY) <= 14 && daysBetween(new Date(r.deadline), TODAY) >= 0);
+  const parts = [];
+  if (top.length) parts.push(`<b>${active.length} partner${active.length === 1 ? '' : 's'}</b> have logged submissions so far. Top by volume: ${top.map((t) => `<b>${t.name}</b> (${t.subCount} submission${t.subCount === 1 ? '' : 's'} across ${t.roleCount} role${t.roleCount === 1 ? '' : 's'})`).join('; ')}.`);
+  else parts.push(`No partners have logged submissions yet via "Log a submission" \u2014 ${PARTNERS.length} partner account${PARTNERS.length === 1 ? '' : 's'} currently active.`);
+  if (stale10.length) parts.push(`<b>${stale10.length} role${stale10.length === 1 ? '' : 's'}</b> critically stuck (open 10+ days, zero applications): ${stale10.slice(0, 3).map((x) => `${x.role.title} (${x.role.client}, ${x.daysOpen}d)`).join('; ')}${stale10.length > 3 ? `, +${stale10.length - 3} more` : ''}.`);
+  else if (stale5.length) parts.push(`${stale5.length} role${stale5.length === 1 ? '' : 's'} getting stale (open 5+ days, zero applications) \u2014 worth a nudge before the 10-day mark.`);
+  else parts.push('No roles are currently stuck at zero applications.');
+  if (recentlyClosed.length) parts.push(`${recentlyClosed.length} role${recentlyClosed.length === 1 ? '' : 's'} closed in the last 14 days: ${recentlyClosed.slice(0, 3).map((r) => `${r.title} (${r.client})`).join('; ')}${recentlyClosed.length > 3 ? `, +${recentlyClosed.length - 3} more` : ''}.`);
+  const quiet = partnerActivityRecency().filter((p) => p.status === 'Quiet');
+  if (quiet.length) parts.push(`${quiet.length} partner${quiet.length === 1 ? '' : 's'} gone quiet (no logged submission in 14+ days): ${quiet.map((p) => p.name).join(', ')}.`);
+  return parts.join(' ');
+}
+
+const sortState = {};
+function sortRows(tableKey, rows, defaultCol, defaultDir = 'asc') {
+  const st = sortState[tableKey] || { col: defaultCol, dir: defaultDir };
+  sortState[tableKey] = st;
+  return rows.slice().sort((a, b) => {
+    let av = a[st.col], bv = b[st.col];
+    if (typeof av === 'string') av = av.toLowerCase();
+    if (typeof bv === 'string') bv = bv.toLowerCase();
+    const cmp = av < bv ? -1 : av > bv ? 1 : 0;
+    return st.dir === 'asc' ? cmp : -cmp;
+  });
+}
+function sortArrow(tableKey, col) {
+  const st = sortState[tableKey];
+  if (!st || st.col !== col) return '';
+  return `<span class="arrow">${st.dir === 'asc' ? '▲' : '▼'}</span>`;
+}
+function toggleSort(tableKey, col, rerenderFn) {
+  const st = sortState[tableKey] || {};
+  if (st.col === col) st.dir = st.dir === 'asc' ? 'desc' : 'asc';
+  else { st.col = col; st.dir = 'asc'; }
+  sortState[tableKey] = st;
+  rerenderFn();
+}
+
+const CHART_REGISTRY = {};
+function mountChart(canvasId, config) {
+  try {
+    const el = document.getElementById(canvasId);
+    if (!el || typeof Chart === 'undefined') return;
+    if (CHART_REGISTRY[canvasId]) CHART_REGISTRY[canvasId].destroy();
+    const ctx = el.getContext && el.getContext('2d');
+    if (!ctx) return;
+    CHART_REGISTRY[canvasId] = new Chart(ctx, config);
+  } catch (e) { console.warn('Chart render skipped for', canvasId, e); }
+}
+const FLAG_ORDER = ['needs', 'stalled', 'offer', 'interviewing', 'progress', 'placed', 'closed'];
+function roleHealthBreakdown(roles) {
+  const counts = {};
+  roles.forEach((r) => {
+    const cat = roleFlagCategory(r);
+    counts[cat.key] = counts[cat.key] || { label: cat.label, color: cat.color, count: 0 };
+    counts[cat.key].count++;
+  });
+  return FLAG_ORDER.filter((k) => counts[k]).map((k) => counts[k]);
+}
+
+/* =========================================================
+   SHELL / NAV
+   ========================================================= */
+const PARTNER_TABS = [
+  { key: 'Overview', icon: '◆' }, { key: 'Open Roles', icon: '▤' },
+  { key: 'My Submissions', icon: '✎' }, { key: 'Feedback', icon: '💬' },
+  { key: 'Settings', icon: '⚙' },
+];
+const ADMIN_TABS = [
+  { key: 'Overview', icon: '◆' }, { key: 'Partners', icon: '☺' },
+  { key: 'Recruiters', icon: '👤' },
+  { key: 'Roles', icon: '▤' }, { key: 'Insights', icon: '📈' },
+  { key: 'Feedback Inbox', icon: '💬' },
+  { key: 'Settings', icon: '⚙' },
+];
+
+function renderShell() {
+  const tabsNav = document.getElementById('tabsNav');
+  const dataScope = document.getElementById('dataScope');
+  const tabs = isPartnerView() ? PARTNER_TABS : ADMIN_TABS;
+  dataScope.textContent = !isPartnerView()
+    ? `${PARTNERS.length} partner accounts · ${recruiterNames().length} recruiters tracked · ${openRoles().length} open roles`
+    : 'Your submissions plus all currently open roles.';
+  tabsNav.innerHTML = tabs.map((t) => `<button data-tab="${t.key}" onclick="switchTab('${t.key}')"><span class="ic">${t.icon}</span>${t.key}</button>`).join('');
+  activeTab = tabs[0].key;
+  renderImpersonationBanner();
+  switchTab(activeTab);
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.sidebar nav button').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+  document.getElementById('pageTitle').textContent = tab;
+  const main = document.getElementById('main');
+  let html = '', mountFn = null;
+  if (isPartnerView()) {
+    if (tab === 'Overview') { html = renderPartnerOverview(); mountFn = mountPartnerOverviewCharts; }
+    if (tab === 'Open Roles') html = renderPartnerRoles();
+    if (tab === 'My Submissions') html = renderPartnerSubmissions();
+    if (tab === 'Feedback') html = renderPartnerFeedback();
+    if (tab === 'Settings') html = renderSettings();
+  } else {
+    if (tab === 'Overview') { html = renderAdminOverview(); mountFn = mountAdminOverviewCharts; }
+    if (tab === 'Partners') { html = renderAdminPartners(); mountFn = mountAdminPartnersChart; }
+    if (tab === 'Recruiters') { html = renderAdminRecruiters(); mountFn = mountAdminRecruitersChart; }
+    if (tab === 'Roles') { html = renderAdminRoles(); mountFn = mountAdminRolesChart; }
+    if (tab === 'Insights') { html = renderAdminInsights(); mountFn = mountAdminInsightsChart; }
+    if (tab === 'Feedback Inbox') html = renderAdminFeedback();
+    if (tab === 'Settings') html = renderSettings();
+  }
+  main.innerHTML = `<div class="tabfade">${html}</div>`;
+  if (mountFn) mountFn();
+}
+
+/* =========================================================
+   PARTNER VIEWS
+   ========================================================= */
+function renderPartnerOverview() {
+  const subs = mySubmissions(effectivePartnerId());
+  const totalSubmitted = subs.reduce((n, s) => n + (s.count || 1), 0);
+  const last = partnerLastActivity(effectivePartnerId());
+  const joined = effectivePartnerCreatedAt() ? new Date(effectivePartnerCreatedAt()) : TODAY;
+  const daysSinceJoin = daysBetween(joined, TODAY);
+  const roles = openRoles();
+  const stats = roles.map((r) => ({ role: r, ...roleStats(r) }));
+  const needsSub = stats.filter((s) => s.needsSubmissions);
+  const stalled = stats.filter((s) => s.stalled);
+
+  let alertsHtml = '';
+  if (!subs.length) {
+    alertsHtml += `<div class="alert red"><span>You haven't submitted a candidate since your account was created (${daysSinceJoin} days ago). There are currently <b>${roles.length} open roles</b> you could submit to.</span><span class="tag">No activity</span></div>`;
+  } else {
+    const daysSinceLast = daysBetween(last, TODAY);
+    alertsHtml += `<div class="alert amber"><span>Your last submission was on <b>${fmt(last.toISOString().slice(0, 10))}</b> (${daysSinceLast} days ago). There are currently <b>${roles.length} open roles</b> to submit to.</span><span class="tag">Follow up</span></div>`;
+  }
+  needsSub.forEach((s) => { alertsHtml += `<div class="alert red"><span><b>${s.role.title}</b> (${s.role.client}) — no candidates have reached the client yet, open ${s.daysOpen} days.</span><span class="tag">Needs submissions</span></div>`; });
+  stalled.forEach((s) => { alertsHtml += `<div class="alert amber"><span><b>${s.role.title}</b> (${s.role.client}) — candidates in play but no offer/placement after ${s.daysOpen} days.</span><span class="tag">On Hold</span></div>`; });
+
+  return `
+    <div class="grid-kpi">
+      <div class="kpi"><div class="val">${totalSubmitted}</div><div class="lbl">Your submissions</div></div>
+      <div class="kpi"><div class="val">0</div><div class="lbl">Your placements</div></div>
+      <div class="kpi"><div class="val">${roles.length}</div><div class="lbl">Open roles available</div></div>
+      <div class="kpi accent-danger"><div class="val">${needsSub.length}</div><div class="lbl">Roles needing submissions</div></div>
+    </div>
+    <div class="grid-charts">
+      <div class="chart-card"><h3>Where Liyema needs help right now</h3><div class="canvas-wrap"><canvas id="chart-partner-health"></canvas></div></div>
+      <div class="chart-card"><h3>Your activity</h3><div class="canvas-wrap"><canvas id="chart-partner-activity"></canvas></div></div>
+    </div>
+    <div class="card"><h2 class="section-title" style="margin-bottom:10px;">Alerts</h2>${alertsHtml || '<div class="empty">No alerts.</div>'}</div>
+  `;
+}
+function mountPartnerOverviewCharts() {
+  const breakdown = roleHealthBreakdown(openRoles());
+  if (breakdown.length) mountChart('chart-partner-health', {
+    type: 'doughnut',
+    data: { labels: breakdown.map((b) => b.label), datasets: [{ data: breakdown.map((b) => b.count), backgroundColor: breakdown.map((b) => b.color), borderColor: '#fff', borderWidth: 2 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, padding: 12, font: { size: 11 } } } } },
+  });
+  const subs = mySubmissions(effectivePartnerId()).reduce((n, s) => n + (s.count || 1), 0);
+  mountChart('chart-partner-activity', {
+    type: 'bar',
+    data: { labels: ['You', 'Team best'], datasets: [{ data: [subs, Math.max(subs, 3)], backgroundColor: ['#c9a227', '#1c3f60'], borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } },
+  });
+}
+
+function renderPartnerRoles() {
+  const withDays = openRoles().map((r) => ({ ...r, daysOpenSort: roleStats(r).daysOpen }));
+  const roles = sortRows('partnerRoles', withDays, 'daysOpenSort', 'desc');
+  const clientFilter = document.getElementById('roleClientFilter');
+  const activeClient = clientFilter ? clientFilter.value : 'all';
+  const filtered = activeClient === 'all' ? roles : roles.filter((r) => r.client === activeClient);
+  const clients = clientList(openRoles());
+  const rows = filtered.map((r) => `<tr>
+      <td>${r.title}</td><td>${r.client}</td><td>${fmt(r.dateOpened)}</td>
+      <td>${r.deadline ? fmt(r.deadline) : '—'}</td><td>${r.apps}</td><td>${r.cvsToClient ?? '—'}</td>
+      <td>${stagesText(r.stages)}</td><td>${r.submittedBy ? r.submittedBy : '<span class="muted">\u2014</span>'}</td><td>${roleFlagTag(r)}</td></tr>`).join('');
+  return `
+    <div class="note-box">These are all currently open, published roles across Liyema's clients — any partner can submit candidates against any of them via Squarelink.</div>
+    <div class="card">
+      <div class="card-head"><h2 class="section-title" style="margin:0;">Open roles — available for submissions</h2>
+        <div class="toolbar"><select id="roleClientFilter" onchange="switchTab('Open Roles')">
+          <option value="all" ${activeClient === 'all' ? 'selected' : ''}>All clients</option>
+          ${clients.map((c) => `<option value="${c}" ${activeClient === c ? 'selected' : ''}>${c}</option>`).join('')}
+        </select></div>
+      </div>
+      <table><thead><tr>
+        <th onclick="toggleSort('partnerRoles','title',()=>switchTab('Open Roles'))">Role${sortArrow('partnerRoles', 'title')}</th>
+        <th onclick="toggleSort('partnerRoles','client',()=>switchTab('Open Roles'))">Client${sortArrow('partnerRoles', 'client')}</th>
+        <th onclick="toggleSort('partnerRoles','dateOpened',()=>switchTab('Open Roles'))">Opened${sortArrow('partnerRoles', 'dateOpened')}</th>
+        <th>Deadline</th>
+        <th onclick="toggleSort('partnerRoles','apps',()=>switchTab('Open Roles'))">Apps${sortArrow('partnerRoles', 'apps')}</th>
+        <th>CVs to client</th><th>Stage</th><th title="Internal Liyema recruiter who owns this listing in Squarelink">Recruiter</th>
+        <th onclick="toggleSort('partnerRoles','daysOpenSort',()=>switchTab('Open Roles'))">Status${sortArrow('partnerRoles', 'daysOpenSort')}</th>
+      </tr></thead><tbody>${rows || '<tr><td colspan="9" class="empty">No roles match this filter.</td></tr>'}</tbody></table>
+    </div>
+  `;
+}
+
+function renderPartnerSubmissions() {
+  const subs = mySubmissions(effectivePartnerId()).slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+  const roles = openRoles();
+  const rows = subs.map((s) => {
+    const role = ROLES.find((r) => r.id === s.roleId);
+    return `<tr><td>${s.candidate}${s.count > 1 ? ' <span class="muted small">(x' + s.count + ')</span>' : ''}</td>
+      <td>${role ? role.title : '—'}</td><td>${role ? role.client : '—'}</td><td>${fmt(s.date)}</td>
+      <td><span class="badge submitted">${s.status}</span></td>
+      <td>${s.source === 'squarelink-backfill' ? '<span class="small muted" title="Imported from Squarelink history rather than logged by you directly">Imported from Squarelink</span>' : '<span class="small muted">Logged by you</span>'}</td></tr>`;
+  }).join('');
+  const roleOptions = roles.map((r) => `<option value="${r.id}">${r.title} — ${r.client}</option>`).join('');
+  const logCard = impersonatingPartner ? `
+    <div class="card">
+      <h2 class="section-title" style="font-size:14px;">Log a submission</h2>
+      <div class="note-box" style="margin-bottom:0;">Disabled while previewing ${escapeAttr(impersonatingPartner.name)}'s view — exit to admin view to log a submission as yourself.</div>
+    </div>` : `
+    <div class="card">
+      <h2 class="section-title" style="font-size:14px;">Log a submission</h2>
+      <form class="inline-form" onsubmit="return addSubmission(event)">
+        <div class="fld"><label>Role</label><select id="newSubRole">${roleOptions}</select></div>
+        <div class="fld"><label>Candidate name</label><input type="text" id="newSubCandidate" placeholder="e.g. J. Smith" required></div>
+        <div class="fld"><label>Status</label><select id="newSubStatus">
+          <option>Submitted</option><option>Shortlisted</option><option>1st Interview</option><option>Offer</option><option>Employed</option><option>Rejected</option>
+        </select></div>
+        <button class="btn gold" type="submit">Add submission</button>
+      </form>
+    </div>`;
+  return `
+    <div class="note-box">Log every submission here so both you and Liyema can track your activity — this is now saved for real, not just in your browser.</div>
+    ${logCard}
+    <div class="card">
+      <h2 class="section-title" style="font-size:14px;">Submission history</h2>
+      <table><thead><tr><th>Candidate</th><th>Role</th><th>Client</th><th>Date</th><th>Status</th><th>Source</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="6" class="empty">No submissions on record yet.</td></tr>'}</tbody></table>
+    </div>
+  `;
+}
+async function addSubmission(e) {
+  e.preventDefault();
+  const roleId = document.getElementById('newSubRole').value;
+  const candidate = document.getElementById('newSubCandidate').value.trim();
+  const status = document.getElementById('newSubStatus').value;
+  if (!roleId || !candidate) return false;
+  try {
+    await authFetch('/api/submissions', { method: 'POST', body: JSON.stringify({ roleId, candidate, status }) });
+    await loadAll();
+    switchTab('My Submissions');
+  } catch (err) { alert('Could not save submission: ' + err.message); }
+  return false;
+}
+
+function renderPartnerFeedback() {
+  const mine = FEEDBACK.filter((f) => f.partnerId === effectivePartnerId()).slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+  const roles = openRoles();
+  const roleOptions = '<option value="">General feedback</option>' + roles.map((r) => `<option value="${r.id}">${r.title} — ${r.client}</option>`).join('');
+  const items = mine.map((f) => {
+    const role = f.roleId ? ROLES.find((r) => r.id === f.roleId) : null;
+    return `<div class="feedback-item"><div class="meta">${fmt(f.date)} ${role ? '· ' + role.title + ' (' + role.client + ')' : '· General'} ${f.resolved ? '<span class="resolved-tag">Resolved by Liyema</span>' : ''}</div><div>${f.text}</div></div>`;
+  }).join('');
+  const formCard = impersonatingPartner ? `
+    <div class="card">
+      <h2 class="section-title" style="font-size:14px;">Send feedback</h2>
+      <div class="note-box" style="margin-bottom:0;">Disabled while previewing ${escapeAttr(impersonatingPartner.name)}'s view — exit to admin view to send feedback as yourself.</div>
+    </div>` : `
+    <div class="card">
+      <h2 class="section-title" style="font-size:14px;">Send feedback</h2>
+      <form class="inline-form" onsubmit="return addFeedback(event)" style="align-items:stretch;flex-direction:column;">
+        <div class="fld" style="max-width:320px;"><label>Related role (optional)</label><select id="fbRole">${roleOptions}</select></div>
+        <div class="fld"><label>Your feedback</label><textarea id="fbText" placeholder="e.g. Client's briefing on this role was unclear..." required></textarea></div>
+        <div><button class="btn gold" type="submit">Submit feedback</button></div>
+      </form>
+    </div>`;
+  return `
+    ${formCard}
+    <div class="card"><h2 class="section-title" style="font-size:14px;">Your feedback history</h2>${items || '<div class="empty">No feedback submitted yet.</div>'}</div>
+  `;
+}
+async function addFeedback(e) {
+  e.preventDefault();
+  const roleId = document.getElementById('fbRole').value || null;
+  const text = document.getElementById('fbText').value.trim();
+  if (!text) return false;
+  try {
+    await authFetch('/api/feedback', { method: 'POST', body: JSON.stringify({ roleId, text }) });
+    await loadAll();
+    switchTab('Feedback');
+  } catch (err) { alert('Could not submit feedback: ' + err.message); }
+  return false;
+}
+
+/* =========================================================
+   ADMIN VIEWS
+   ========================================================= */
+function renderAdminOverview() {
+  const roles = openRoles();
+  const stats = roles.map((r) => ({ role: r, ...roleStats(r) }));
+  const needsSub = stats.filter((s) => s.needsSubmissions);
+  const stalled = stats.filter((s) => s.stalled);
+  const dormantPartners = PARTNERS.filter((p) => !mySubmissions(p.id).length);
+  const openFeedback = FEEDBACK.filter((f) => !f.resolved).length;
+
+  let alertsHtml = '';
+  dormantPartners.forEach((p) => {
+    const d = daysBetween(new Date(p.createdAt), TODAY);
+    alertsHtml += `<div class="alert red"><span><b>${p.name}</b> (${p.email}) — zero submissions since joining (${d} days ago).</span><span class="tag">Dormant partner</span></div>`;
+  });
+  needsSub.forEach((s) => { alertsHtml += `<div class="alert amber"><span><b>${s.role.title}</b> (${s.role.client}) — no candidates submitted, open ${s.daysOpen} days.</span><span class="tag">Needs submissions</span></div>`; });
+  stalled.forEach((s) => { alertsHtml += `<div class="alert amber"><span><b>${s.role.title}</b> (${s.role.client}) — candidates in play, no offer/placement after ${s.daysOpen} days.</span><span class="tag">On Hold</span></div>`; });
+  if (!alertsHtml) alertsHtml = '<div class="empty">No active alerts.</div>';
+
+  // NEW: explicit 5-day / 10-day stale-role thresholds (open roles, zero apps),
+  // shown as a visually distinct block rather than buried in the roles table.
+  const stale10 = staleOpenRoles(STALE_HARD_DAYS);
+  const stale5only = staleOpenRoles(STALE_SOFT_DAYS).filter((x) => x.daysOpen <= STALE_HARD_DAYS);
+  let staleHtml = '';
+  stale10.forEach((x) => { staleHtml += `<div class="alert red"><span><b>${x.role.title}</b> (${x.role.client}) — open ${x.daysOpen} days with zero applications.</span><span class="tag">10+ days · critical</span></div>`; });
+  stale5only.forEach((x) => { staleHtml += `<div class="alert amber"><span><b>${x.role.title}</b> (${x.role.client}) — open ${x.daysOpen} days with zero applications.</span><span class="tag">5+ days</span></div>`; });
+  if (!staleHtml) staleHtml = '<div class="empty">No roles are stuck at zero applications right now.</div>';
+
+  return `
+    <div class="grid-kpi">
+      <div class="kpi"><div class="val">${PARTNERS.length}</div><div class="lbl">Partner accounts</div></div>
+      <div class="kpi"><div class="val">${roles.length}</div><div class="lbl">Open roles</div></div>
+      <div class="kpi accent-danger"><div class="val">${dormantPartners.length}</div><div class="lbl">Partners with zero activity</div></div>
+      <div class="kpi accent-warning"><div class="val">${openFeedback}</div><div class="lbl">Unresolved feedback</div></div>
+    </div>
+    <div class="grid-charts">
+      <div class="chart-card"><h3>Role status breakdown</h3><div class="canvas-wrap"><canvas id="chart-admin-health"></canvas></div></div>
+      <div class="chart-card"><h3>Submissions by partner</h3><div class="canvas-wrap"><canvas id="chart-admin-partners-mini"></canvas></div></div>
+    </div>
+    <div class="card">
+      <h2 class="section-title" style="margin-bottom:2px;">Weekly summary <span class="small muted" style="font-weight:500;">(auto-generated from live data)</span></h2>
+      <p style="font-size:13.5px;line-height:1.6;color:var(--c-text-soft);margin:10px 0 0;">${generateWeeklySummary()}</p>
+    </div>
+    <div class="card"><h2 class="section-title" style="margin-bottom:10px;">Stale role alerts <span class="small muted" style="font-weight:500;">(5-day / 10-day zero-application thresholds)</span></h2>${staleHtml}</div>
+    <div class="card"><h2 class="section-title" style="margin-bottom:10px;">Alerts</h2>${alertsHtml}</div>
+  `;
+}
+function mountAdminOverviewCharts() {
+  const breakdown = roleHealthBreakdown(openRoles());
+  if (breakdown.length) mountChart('chart-admin-health', {
+    type: 'doughnut',
+    data: { labels: breakdown.map((b) => b.label), datasets: [{ data: breakdown.map((b) => b.count), backgroundColor: breakdown.map((b) => b.color), borderColor: '#fff', borderWidth: 2 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, padding: 12, font: { size: 11 } } } } },
+  });
+  const labels = PARTNERS.map((p) => p.name);
+  const data = PARTNERS.map((p) => mySubmissions(p.id).reduce((n, s) => n + (s.count || 1), 0));
+  const colors = data.map((v) => (v > 0 ? '#1c3f60' : '#c0392b'));
+  mountChart('chart-admin-partners-mini', {
+    type: 'bar',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+      onClick: (evt, els) => { if (els.length && PARTNERS[els[0].index]) { switchTab('Partners'); openPartnerDetail(PARTNERS[els[0].index].id); } },
+      onHover: (evt, els) => { evt.native.target.style.cursor = els.length ? 'pointer' : 'default'; } },
+  });
+}
+
+function renderAdminPartners() {
+  const rows0 = PARTNERS.map((p) => {
+    const subs = mySubmissions(p.id);
+    const totalSubmitted = subs.reduce((n, s) => n + (s.count || 1), 0);
+    const last = partnerLastActivity(p.id);
+    const daysSinceJoin = daysBetween(new Date(p.createdAt), TODAY);
+    // Native partner-attribution -- from SUBMISSIONS (the "Log a submission"
+    // feature), keyed by this partner's actual Identity id. This is distinct
+    // from Squarelink's submittedBy field, which identifies the internal
+    // Liyema recruiter on a role, not the partner who sourced a candidate.
+    const stats = partnerSubmissionStats(p);
+    return { ...p, totalSubmitted, placements: 0, lastMs: last ? last.getTime() : -1, dormant: !subs.length,
+      lastText: last ? `${fmt(last.toISOString().slice(0, 10))} (${daysBetween(last, TODAY)}d ago)` : `Never (joined ${daysSinceJoin}d ago)`,
+      statsRoleCount: stats.roleCount, statsOpen: stats.openCount, statsClosed: stats.closedCount, statsLatestStatus: stats.latestStatus };
+  });
+  const rows = sortRows('adminPartners', rows0, 'totalSubmitted', 'desc');
+  const canManage = isAdminUser;
+  const trs = rows.map((p) => `<tr style="cursor:pointer;" onclick="openPartnerDetail('${p.id}')" title="Click to see ${p.name.replace(/"/g, '&quot;')}'s full submission history"><td><span class="link-row">${p.name}</span></td>
+    <td onclick="event.stopPropagation();">${p.company ? p.company : '<span class="muted">—</span>'} ${canManage ? `<button class="btn ghost sm" onclick="editPartnerCompany('${p.id}', '${p.name.replace(/'/g, "\\'")}', '${(p.company || '').replace(/'/g, "\\'")}')" title="Edit company name">Edit</button>` : ''}</td>
+    <td>${p.email}</td><td>${fmt(p.createdAt)}</td>
+    <td>${p.totalSubmitted}</td><td>${p.placements}</td><td>${p.lastText}</td>
+    <td>${p.statsRoleCount ? `${p.statsRoleCount} (${p.statsOpen} open / ${p.statsClosed} closed)` : '<span class="muted">—</span>'}</td>
+    <td>${p.statsLatestStatus ? p.statsLatestStatus : '<span class="muted">—</span>'}</td>
+    <td>${p.confirmed ? '' : '<span class="flag active">Invite pending</span>'} ${p.dormant ? '<span class="flag needs">Dormant</span>' : ''}</td>
+    <td onclick="event.stopPropagation();"><button class="btn ghost sm" onclick="viewAsPartner('${p.id}')" title="Preview exactly what ${p.name.replace(/"/g, '&quot;')} sees when they log in -- read-only, no password needed">View as partner</button> ${canManage ? `<button class="btn ghost sm" onclick="resendInvite('${p.id}')">Resend invite</button> ${p.confirmed ? '' : `<button class="btn ghost sm" onclick="confirmPartnerEmail('${p.id}', '${p.name.replace(/'/g, "\\'")}')" title="Best-effort: re-asserts their role/name and attempts to force-confirm. Confirmation itself usually still requires them to click the link in their invite email.">Fix account</button>`} <button class="btn danger sm" onclick="removePartner('${p.id}')">Remove</button>` : ''}</td></tr>`).join('');
+
+  const staffTrs = STAFF.map((s) => `<tr><td>${s.name}</td><td>${s.company ? s.company : '<span class="muted">—</span>'}</td><td>${s.email}</td><td>${fmt(s.createdAt)}</td>
+    ${canManage ? `<td><button class="btn ghost sm" onclick="setStaffPassword('${s.id}', '${s.email.replace(/'/g, "\\'")}', '${s.name.replace(/'/g, "\\'")}')">Set password</button> <button class="btn danger sm" onclick="removePartner('${s.id}')">Remove</button></td>` : ''}</tr>`).join('');
+
+  const addPartnerCard = canManage ? `
+    <div class="card">
+      <h2 class="section-title" style="font-size:14px;">Add a partner account</h2>
+      <div class="note-box">Creates a real Netlify Identity account tagged as a Partner. Set a password below to hand the login straight to them yourself — or leave it blank and they'll get an email invite to set their own password instead (fallback: Site settings → Identity → Invite users in the Netlify dashboard).</div>
+      <form class="inline-form" onsubmit="return addPartner(event)">
+        <div class="fld"><label>Full name</label><input type="text" id="newPartnerName" placeholder="e.g. Thandi Nkosi" required></div>
+        <div class="fld"><label>Company</label><input type="text" id="newPartnerCompany" placeholder="e.g. Thandi Recruitment"></div>
+        <div class="fld"><label>Email</label><input type="email" id="newPartnerEmail" placeholder="name@agency.co.za" required></div>
+        <div class="fld"><label>Password (optional)</label><input type="text" id="newPartnerPassword" placeholder="leave blank to email-invite instead" minlength="8"></div>
+        <div class="fld"><label>&nbsp;</label><button class="btn ghost" type="button" onclick="generatePartnerPassword()">Generate password</button></div>
+        <button class="btn gold" type="submit">Create partner account</button>
+      </form>
+    </div>` : '';
+
+  const staffCard = `
+    <div class="card">
+      <div class="card-head"><h2 class="section-title" style="margin:0;">Liyema Team</h2></div>
+      <div class="note-box" style="margin-bottom:12px;">Internal Liyema staff with the same data visibility as an admin (Partners, Recruiters, Roles, Insights, Feedback Inbox, Settings), but no management actions — they can't add or remove accounts, resolve feedback, or request a Squarelink refresh. They sign in with the "Liyema Team member?" link on the login screen using the password set below — not the usual Netlify email/password flow, since Netlify blocks unconfirmed-email logins with no fix available on our plan.</div>
+      ${canManage ? `
+      <form class="inline-form" onsubmit="return addStaff(event)" style="margin-bottom:16px;">
+        <div class="fld"><label>Full name</label><input type="text" id="newStaffName" placeholder="e.g. Lebo Laka" required></div>
+        <div class="fld"><label>Email</label><input type="email" id="newStaffEmail" placeholder="name@liyemagroup.com" required></div>
+        <div class="fld"><label>Password (required)</label><input type="text" id="newStaffPassword" placeholder="min 8 characters" minlength="8" required></div>
+        <div class="fld"><label>&nbsp;</label><button class="btn ghost" type="button" onclick="generateStaffPassword()">Generate password</button></div>
+        <button class="btn gold" type="submit">Create team account</button>
+      </form>` : ''}
+      <table><thead><tr><th>Name</th><th>Company</th><th>Email</th><th>Joined</th>${canManage ? '<th>Actions</th>' : ''}</tr></thead>
+      <tbody>${staffTrs || `<tr><td colspan="${canManage ? 5 : 4}" class="empty">No internal team accounts yet${canManage ? ' — add one above.' : '.'}</td></tr>`}</tbody></table>
+    </div>`;
+
+  return `
+    ${addPartnerCard}
+    <div class="grid-charts"><div class="chart-card" style="grid-column:1 / -1;"><h3>Submissions per partner</h3><div class="canvas-wrap"><canvas id="chart-partners-full"></canvas></div></div></div>
+    <div class="card">
+      <div class="card-head"><h2 class="section-title" style="margin:0;">Partners</h2></div>
+      <div class="note-box" style="margin-bottom:12px;">Click a partner's name to see their full submission history — every candidate, role, client, date, status and where the record came from.</div>
+      <table><thead><tr>
+        <th onclick="toggleSort('adminPartners','name',()=>switchTab('Partners'))">Partner${sortArrow('adminPartners', 'name')}</th>
+        <th>Company</th>
+        <th>Email</th>
+        <th onclick="toggleSort('adminPartners','createdAt',()=>switchTab('Partners'))">Joined${sortArrow('adminPartners', 'createdAt')}</th>
+        <th onclick="toggleSort('adminPartners','totalSubmitted',()=>switchTab('Partners'))">Submissions${sortArrow('adminPartners', 'totalSubmitted')}</th>
+        <th>Placements</th>
+        <th onclick="toggleSort('adminPartners','lastMs',()=>switchTab('Partners'))">Last activity${sortArrow('adminPartners', 'lastMs')}</th>
+        <th title="Roles this partner has logged a submission against, via their own &quot;Log a submission&quot; feature">Roles submitted to</th>
+        <th title="Status of their most recently logged submission">Latest status</th>
+        <th>Flags</th>
+        <th>Actions</th>
+      </tr></thead><tbody>${trs || '<tr><td colspan="11" class="empty">No partner accounts yet — add one above.</td></tr>'}</tbody></table>
+    </div>
+    ${staffCard}
+  `;
+}
+function mountAdminPartnersChart() {
+  const labels = PARTNERS.map((p) => p.name);
+  const data = PARTNERS.map((p) => mySubmissions(p.id).reduce((n, s) => n + (s.count || 1), 0));
+  const colors = data.map((v) => (v > 0 ? '#1c3f60' : '#c0392b'));
+  mountChart('chart-partners-full', {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'Submissions', data, backgroundColor: colors, borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+      onClick: (evt, els) => { if (els.length && PARTNERS[els[0].index]) openPartnerDetail(PARTNERS[els[0].index].id); },
+      onHover: (evt, els) => { evt.native.target.style.cursor = els.length ? 'pointer' : 'default'; } },
+  });
+}
+
+/* =========================================================
+   RECRUITERS (internal Liyema staff who own listings in Squarelink --
+   e.g. Lebo Laka, Kganya Moyo, Riaan Jordaan. Tracked automatically from
+   the scheduled Squarelink sync's `submittedBy` field -- there is no
+   account/login for them here, this is a read-only workload view,
+   deliberately kept separate from partner performance.
+   ========================================================= */
+function renderAdminRecruiters() {
+  const rows0 = recruiterNames().map((n) => ({ name: n, ...recruiterStats(n) }));
+  const rows = sortRows('adminRecruiters', rows0, 'count', 'desc');
+  const recency = recruiterActivityRecency();
+  const attributed = ROLES.filter((r) => r.submittedBy).length;
+
+  const trs = rows.map((r) => {
+    const convPct = r.appsSum > 0 ? Math.round((r.cvsSum / r.appsSum) * 100) : null;
+    const rec = recency.find((x) => x.name === r.name);
+    return `<tr><td>${r.name}</td><td>${r.count}</td><td>${r.openCount}</td><td>${r.closedCount}</td>
+      <td>${r.appsSum}</td><td>${r.cvsSum}</td><td>${convPct !== null ? convPct + '%' : '<span class="muted">—</span>'}</td>
+      <td>${rec && rec.daysSince !== null ? rec.daysSince + 'd ago' : '<span class="muted">—</span>'}</td>
+      <td><span class="flag ${rec && rec.status === 'Active' ? 'win' : rec && rec.status === 'Quiet' ? 'stalled' : 'closedflag'}">${rec ? rec.status : 'Unknown'}</span></td></tr>`;
+  }).join('');
+
+  return `
+    <div class="note-box">Internal Liyema recruiters, tracked automatically from Squarelink's own "Submitted by" field on each role listing (refreshed by the daily sync). This is separate from partner activity, which lives on the Partners tab and comes from partners logging their own submissions.</div>
+    <div class="grid-kpi">
+      <div class="kpi"><div class="val">${rows.length}</div><div class="lbl">Recruiters tracked</div></div>
+      <div class="kpi"><div class="val">${attributed}</div><div class="lbl">Roles with a recruiter on record</div></div>
+      <div class="kpi accent-warning"><div class="val">${ROLES.length - attributed}</div><div class="lbl">Roles with no recruiter yet</div></div>
+    </div>
+    <div class="grid-charts"><div class="chart-card" style="grid-column:1 / -1;"><h3>Roles per recruiter</h3><div class="canvas-wrap"><canvas id="chart-recruiters"></canvas></div></div></div>
+    <div class="card">
+      <div class="card-head"><h2 class="section-title" style="margin:0;">Recruiters</h2></div>
+      <table><thead><tr>
+        <th onclick="toggleSort('adminRecruiters','name',()=>switchTab('Recruiters'))">Recruiter${sortArrow('adminRecruiters', 'name')}</th>
+        <th onclick="toggleSort('adminRecruiters','count',()=>switchTab('Recruiters'))">Roles${sortArrow('adminRecruiters', 'count')}</th>
+        <th>Open</th><th>Closed</th><th>Apps</th><th>CVs to client</th><th>Apps→CVs</th><th>Last role opened</th><th>Status</th>
+      </tr></thead><tbody>${trs || '<tr><td colspan="9" class="empty">No recruiter data yet -- populates from the scheduled Squarelink sync.</td></tr>'}</tbody></table>
+    </div>
+  `;
+}
+function mountAdminRecruitersChart() {
+  const rows = sortRows('adminRecruiters', recruiterNames().map((n) => ({ name: n, ...recruiterStats(n) })), 'count', 'desc');
+  mountChart('chart-recruiters', {
+    type: 'bar',
+    data: { labels: rows.map((r) => r.name), datasets: [{ label: 'Roles', data: rows.map((r) => r.count), backgroundColor: '#1c3f60', borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } },
+  });
+}
+function generatePartnerPassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
+  const arr = new Uint32Array(12);
+  crypto.getRandomValues(arr);
+  const pw = Array.from(arr, (n) => chars[n % chars.length]).join('');
+  document.getElementById('newPartnerPassword').value = pw;
+}
+async function addPartner(e) {
+  e.preventDefault();
+  const name = document.getElementById('newPartnerName').value.trim();
+  const company = document.getElementById('newPartnerCompany').value.trim();
+  const email = document.getElementById('newPartnerEmail').value.trim();
+  const password = document.getElementById('newPartnerPassword').value.trim();
+  if (!name || !email) return false;
+  if (password && password.length < 8) { alert('Password must be at least 8 characters (or leave it blank to email-invite instead).'); return false; }
+  try {
+    const res = await authFetch('/api/create-partner', { method: 'POST', body: JSON.stringify({ name, email, company: company || undefined, password: password || undefined }) });
+    await loadAll();
+    switchTab('Partners');
+    if (res.passwordSet) {
+      alert(`Partner account created for ${name}.\n\nLogin email: ${email}\nPassword: ${password}\n\nCopy this now — it won't be shown again. Share it with them directly (this app won't email it for you).`);
+    } else {
+      alert(`Partner account created for ${name}. They should receive an email invite to set their own password shortly.`);
+    }
+  } catch (err) { alert('Could not create partner account: ' + err.message); }
+  return false;
+}
+function generateStaffPassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
+  const arr = new Uint32Array(12);
+  crypto.getRandomValues(arr);
+  const pw = Array.from(arr, (n) => chars[n % chars.length]).join('');
+  document.getElementById('newStaffPassword').value = pw;
+}
+async function addStaff(e) {
+  e.preventDefault();
+  const name = document.getElementById('newStaffName').value.trim();
+  const email = document.getElementById('newStaffEmail').value.trim();
+  const password = document.getElementById('newStaffPassword').value.trim();
+  if (!name || !email || !password) return false;
+  if (password.length < 8) { alert('Password must be at least 8 characters.'); return false; }
+  try {
+    const res = await authFetch('/api/create-partner', { method: 'POST', body: JSON.stringify({ name, email, password, role: 'staff' }) });
+    await loadAll();
+    switchTab('Partners');
+    alert(`Liyema team account created for ${name}.\n\nThey sign in using the "Liyema Team member?" link on the login screen.\n\nLogin email: ${email}\nPassword: ${password}\n\nCopy this now — it won't be shown again. Share it with them directly (this app won't email it for you).`);
+  } catch (err) { alert('Could not create team account: ' + err.message); }
+  return false;
+}
+async function setStaffPassword(id, email, name) {
+  const pw = prompt(`Set a new login password for ${name} (${email}).\n\nMinimum 8 characters:`);
+  if (pw === null) return;
+  if (pw.length < 8) { alert('Password must be at least 8 characters.'); return; }
+  try {
+    await authFetch('/api/set-staff-password', { method: 'POST', body: JSON.stringify({ id, email, name, password: pw }) });
+    alert(`Password updated for ${name}.\n\nNew password: ${pw}\n\nCopy this now — it won't be shown again. Share it with them directly.`);
+  } catch (err) { alert('Could not set password: ' + err.message); }
+}
+
+function adminRolesFilteredBase() {
+  const roles0 = ROLES.map((r) => ({ ...r, daysOpenSort: roleStats(r).daysOpen }));
+  const clientFilter = document.getElementById('adminRoleClientFilter');
+  const statusFilter = document.getElementById('adminRoleStatusFilter');
+  const activeClient = clientFilter ? clientFilter.value : 'all';
+  const activeStatus = statusFilter ? statusFilter.value : 'all';
+  return roles0
+    .filter((r) => activeClient === 'all' || r.client === activeClient)
+    .filter((r) => activeStatus === 'all' || r.status === activeStatus);
+}
+function renderAdminRoles() {
+  const statusFilterEl = document.getElementById('adminRoleStatusFilter');
+  const clientFilterEl = document.getElementById('adminRoleClientFilter');
+  const activeStatus = statusFilterEl ? statusFilterEl.value : 'all';
+  const activeClient = clientFilterEl ? clientFilterEl.value : 'all';
+  const filteredBase = adminRolesFilteredBase();
+  const rows = sortRows('adminRoles', filteredBase, 'daysOpenSort', 'desc');
+  const clients = clientList(ROLES);
+  const openCount = ROLES.filter((r) => r.status === 'Open').length;
+  const closedCount = ROLES.filter((r) => r.status === 'Closed').length;
+  const trs = rows.map((r) => {
+    const s = roleStats(r);
+    const partnerNames = rolePartnerNames(r.id);
+    return `<tr><td>${r.title}</td><td>${r.client}</td><td><span class="badge ${r.status === 'Open' ? 'open' : 'closed'}">${r.status}</span></td>
+      <td>${fmt(r.dateOpened)}</td><td>${s.daysOpen}</td><td>${r.apps}</td><td>${r.cvsToClient ?? '—'}</td>
+      <td>${stagesText(r.stages)}</td><td>${r.submittedBy ? r.submittedBy : '<span class="muted">\u2014</span>'}</td>
+      <td>${partnerNames.length ? partnerNames.join(', ') : '<span class="muted">\u2014</span>'}</td><td>${roleFlagTag(r)}</td></tr>`;
+  }).join('');
+  return `
+    <div class="grid-charts"><div class="chart-card" style="grid-column:1 / -1;"><h3>Days open by role</h3><div class="canvas-wrap"><canvas id="chart-roles-days"></canvas></div></div></div>
+    <div class="card">
+      <div class="card-head"><h2 class="section-title" style="margin:0;">All roles</h2>
+        <div class="toolbar">
+          <select id="adminRoleStatusFilter" onchange="switchTab('Roles')">
+            <option value="all" ${activeStatus === 'all' ? 'selected' : ''}>All statuses (${ROLES.length})</option>
+            <option value="Open" ${activeStatus === 'Open' ? 'selected' : ''}>Open (${openCount})</option>
+            <option value="Closed" ${activeStatus === 'Closed' ? 'selected' : ''}>Closed (${closedCount})</option>
+          </select>
+          <select id="adminRoleClientFilter" onchange="switchTab('Roles')">
+            <option value="all" ${activeClient === 'all' ? 'selected' : ''}>All clients</option>
+            ${clients.map((c) => `<option value="${c}" ${activeClient === c ? 'selected' : ''}>${c}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="showing-count">Showing ${rows.length} of ${ROLES.length} roles</div>
+      <table><thead><tr>
+        <th onclick="toggleSort('adminRoles','title',()=>switchTab('Roles'))">Role${sortArrow('adminRoles', 'title')}</th>
+        <th onclick="toggleSort('adminRoles','client',()=>switchTab('Roles'))">Client${sortArrow('adminRoles', 'client')}</th>
+        <th onclick="toggleSort('adminRoles','status',()=>switchTab('Roles'))">Status${sortArrow('adminRoles', 'status')}</th>
+        <th onclick="toggleSort('adminRoles','dateOpened',()=>switchTab('Roles'))">Opened${sortArrow('adminRoles', 'dateOpened')}</th>
+        <th onclick="toggleSort('adminRoles','daysOpenSort',()=>switchTab('Roles'))">Days open${sortArrow('adminRoles', 'daysOpenSort')}</th>
+        <th onclick="toggleSort('adminRoles','apps',()=>switchTab('Roles'))">Apps${sortArrow('adminRoles', 'apps')}</th>
+        <th>CVs to client</th><th>Stage</th><th title="Internal Liyema recruiter who owns this listing in Squarelink -- not a partner">Recruiter</th>
+        <th title="Partners who have logged a submission against this role via &quot;Log a submission&quot;">Partner subs</th><th>Flag</th>
+      </tr></thead><tbody>${trs || '<tr><td colspan="11" class="empty">No roles match this filter.</td></tr>'}</tbody></table>
+    </div>
+  `;
+}
+function mountAdminRolesChart() {
+  const rows = sortRows('adminRoles', adminRolesFilteredBase(), 'daysOpenSort', 'desc');
+  const labels = rows.map((r) => (r.title.length > 28 ? r.title.slice(0, 26) + '…' : r.title));
+  const data = rows.map((r) => roleStats(r).daysOpen);
+  const colors = rows.map((r) => roleFlagCategory(r).color);
+  mountChart('chart-roles-days', {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'Days open', data, backgroundColor: colors, borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } },
+  });
+}
+
+/* =========================================================
+   INSIGHTS -- rolling submission trend / role-aging view +
+   per-partner performance scorecard, sourced from native partner
+   submissions (SUBMISSIONS / "Log a submission"), plus a separate
+   Squarelink internal-recruiter workload view (not partner data).
+   ========================================================= */
+function renderAdminInsights() {
+  const buckets = roleAgeBuckets();
+  const recency = partnerActivityRecency();
+  const scoreRows = PARTNERS.map((p) => ({ name: p.name, ...partnerSubmissionStats(p) })).sort((a, b) => b.subCount - a.subCount);
+  const bucketRows = buckets.map((b) => `<tr><td>${b.label}</td><td>${b.count}</td></tr>`).join('');
+
+  const recencyRows = recency.length
+    ? recency.map((p) => `<tr><td>${p.name}</td><td>${p.subCount}</td><td>${p.daysSince === null ? '—' : p.daysSince + 'd ago'}</td>
+        <td><span class="flag ${p.status === 'Active' ? 'win' : p.status === 'Quiet' ? 'stalled' : 'closedflag'}">${p.status}</span></td></tr>`).join('')
+    : '<tr><td colspan="4" class="empty">No partner accounts yet.</td></tr>';
+
+  const scoreRowsHtml = scoreRows.length
+    ? scoreRows.map((p) => `<tr><td>${p.name}</td><td>${p.subCount}</td><td>${p.roleCount}</td><td>${p.openCount}</td><td>${p.closedCount}</td>
+        <td>${p.latestStatus ? p.latestStatus : '<span class="muted">—</span>'}</td></tr>`).join('')
+    : '<tr><td colspan="6" class="empty">No partner submissions logged yet.</td></tr>';
+
+  return `
+    <div class="note-box">Per-partner numbers below come from partners' own "Log a submission" entries — the real, partner-attributed record. Squarelink's "Submitted by" field identifies the internal Liyema recruiter who owns a listing, not a partner, so it's shown separately further down.</div>
+    <div class="card">
+      <h2 class="section-title" style="margin-bottom:2px;">Weekly summary <span class="small muted" style="font-weight:500;">(auto-generated from live data)</span></h2>
+      <p style="font-size:13.5px;line-height:1.6;color:var(--c-text-soft);margin:10px 0 0;">${generateWeeklySummary()}</p>
+    </div>
+    <div class="grid-charts">
+      <div class="chart-card"><h3>Open roles by age bucket</h3><div class="canvas-wrap"><canvas id="chart-age-buckets"></canvas></div></div>
+      <div class="chart-card">
+        <h3>Partner activity recency</h3>
+        <table><thead><tr><th>Partner</th><th>Submissions</th><th>Last logged</th><th>Status</th></tr></thead>
+        <tbody>${recencyRows}</tbody></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2 class="section-title" style="margin:0;">Per-partner performance scorecard</h2></div>
+      <table><thead><tr>
+        <th>Partner</th><th>Submissions</th><th>Roles submitted to</th><th>Open</th><th>Closed</th><th>Latest status</th>
+      </tr></thead><tbody>${scoreRowsHtml}</tbody></table>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2 class="section-title" style="margin:0;">Role-aging buckets</h2></div>
+      <table><thead><tr><th>Age bucket</th><th>Open roles</th></tr></thead><tbody>${bucketRows}</tbody></table>
+    </div>
+    <div class="note-box">Internal Liyema recruiter workload (Lebo Laka, Kganya Moyo, Riaan Jordaan, etc.) is now tracked on its own <b>Recruiters</b> tab in the sidebar, separate from partner performance above.</div>
+  `;
+}
+function mountAdminInsightsChart() {
+  const buckets = roleAgeBuckets();
+  mountChart('chart-age-buckets', {
+    type: 'bar',
+    data: { labels: buckets.map((b) => b.label), datasets: [{ label: 'Open roles', data: buckets.map((b) => b.count), backgroundColor: '#1c3f60', borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
+  });
+}
+
+/* =========================================================
+   CLIENT PULSE TAB -- renders the manual snapshot above. See the
+   CLIENT_PULSE data block for provenance notes.
+   ========================================================= */
+function renderAdminClientPulse() {
+  const cp = CLIENT_PULSE;
+  const snapshotAge = daysBetween(CLIENT_PULSE_SNAPSHOT_DATE, TODAY);
+
+  const priorityRows = cp.priorityQueue.map((r) => `<tr>
+      <td>${r.candidate}${r.flagged ? ' <span class="flag needs">flagged</span>' : ''}</td>
+      <td>${r.role}</td>
+      <td><span class="badge open">${r.stage}</span></td>
+      <td>${cpLiveDays(r.daysAtSnapshot)}d</td>
+      <td>${r.isNew ? '<span class="flag win">new</span> ' : (r.flagged ? '<span class="flag needs">▶</span> ' : '')}${r.blocker}</td></tr>`).join('');
+
+  const backlogRows = cp.clientBacklog.map((r) => `<tr>
+      <td>${r.clientRole}${r.flagged ? ' <span class="flag needs">flagged</span>' : ''}</td>
+      <td>${r.candidates}</td>
+      <td>${r.submitted}</td>
+      <td>${cpLiveDays(r.daysAtSnapshot)}d</td>
+      <td>${r.isNew ? '<span class="flag win">new</span> ' : (r.flagged ? '<span class="flag needs">▶</span> ' : '')}${r.blocker}</td></tr>`).join('');
+
+  const debriefsHtml = cp.debriefs.map((d) => `
+    <div class="card">
+      <div class="card-head">
+        <div><h2 class="section-title" style="margin:0;">${d.candidate}</h2><div class="modal-sub" style="margin-top:2px;">${d.role}</div></div>
+        <span class="flag win">${d.outcome}</span>
+      </div>
+      <p style="font-size:13px;line-height:1.6;margin:0 0 10px;">${d.summary}</p>
+      <div class="note-box" style="margin-bottom:14px;"><em>${d.note}</em></div>
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--c-muted);letter-spacing:.04em;margin-bottom:6px;">Interview panel</div>
+      <div style="font-size:13px;margin-bottom:16px;">${d.panel.join(' · ')}</div>
+      ${d.questions.map((q) => `
+        <div style="margin-bottom:10px;">
+          <div style="font-weight:700;font-size:13px;margin-bottom:4px;">${q.q}</div>
+          <ul style="margin:0 0 0 18px;padding:0;font-size:13px;color:var(--c-text-soft);">
+            ${q.points.map((p) => `<li>${p}</li>`).join('')}
+          </ul>
+        </div>`).join('')}
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--c-muted);letter-spacing:.04em;margin:14px 0 6px;">Technical assessment</div>
+      <p style="font-size:13px;line-height:1.6;margin:0 0 12px;">${d.technicalAssessment}</p>
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--c-muted);letter-spacing:.04em;margin-bottom:6px;">Candidate feedback</div>
+      <p style="font-size:13px;line-height:1.6;margin:0;">${d.candidateFeedback}</p>
+    </div>`).join('');
+
+  const recsHtml = cp.recommendations.map((r) => `
+    <div class="card" style="display:flex;gap:14px;align-items:flex-start;">
+      <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--c-primary-tint);color:var(--c-primary);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;">${r.priority}</div>
+      <div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${r.title}</div>
+        <p style="font-size:13px;line-height:1.6;margin:0 0 6px;color:var(--c-text-soft);">${r.body}</p>
+        <span class="small muted">${r.tag}</span>
+      </div>
+    </div>`).join('');
+
+  const notesHtml = cp.otherNotes.map((n) => `
+    <div class="card">
+      <div style="font-weight:700;font-size:14px;margin-bottom:6px;">${n.title}</div>
+      <p style="font-size:13px;line-height:1.6;margin:0 0 10px;color:var(--c-text-soft);">${n.body}</p>
+      <div class="note-box" style="margin:0;"><b>Suggested action:</b> ${n.action}</div>
+    </div>`).join('');
+
+  const meetingHtml = cp.meetingIntel.map((m) => `
+    <div class="card">
+      <div class="card-head" style="margin-bottom:6px;"><div style="font-weight:700;font-size:14px;">${m.title}</div>
+        <span class="flag ${m.confirmed ? 'win' : 'stalled'}">${m.confirmed ? 'Confirmed' : 'Unconfirmed'}</span></div>
+      <p style="font-size:13px;line-height:1.6;margin:0;color:var(--c-text-soft);">${m.body}</p>
+    </div>`).join('');
+
+  return `
+    <div class="note-box">Manual snapshot from a separate "Squarelink Pipeline Dashboard" export, dated ${fmt(CLIENT_PULSE_SNAPSHOT_DATE.toISOString().slice(0, 10))} (${snapshotAge}d ago) — not live-connected yet. Day-counts below recalculate live off today's date; the underlying blocker notes and recommendations are frozen at the snapshot until that dashboard is running directly against Squarelink.</div>
+
+    <div class="grid-kpi">
+      <div class="kpi"><div class="val">${cp.kpis.activeStages}</div><div class="lbl">Candidates in active recruiter stages</div></div>
+      <div class="kpi accent-danger"><div class="val">${cp.kpis.highRisk}</div><div class="lbl">Flagged as high-risk / stale</div></div>
+      <div class="kpi accent-warning"><div class="val">${cp.kpis.over30d}</div><div class="lbl">In-stage &gt;30 days</div></div>
+      <div class="kpi"><div class="val">${cp.kpis.awaitingClientFeedback}</div><div class="lbl">Applications awaiting client feedback</div></div>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title" style="margin-bottom:10px;">Priority queue — recruiter-managed stages</h2>
+      <table><thead><tr><th>Candidate</th><th>Role / Client</th><th>Stage</th><th>Days in stage</th><th>Blocker</th></tr></thead>
+      <tbody>${priorityRows || '<tr><td colspan="5" class="empty">No priority-queue rows in this snapshot.</td></tr>'}</tbody></table>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title" style="margin-bottom:10px;">Submitted to client — client-side backlog (grouped)</h2>
+      <div class="note-box" style="margin-bottom:14px;">These are batches, not single candidates — delay clusters at the client.</div>
+      <table><thead><tr><th>Client / Role</th><th>Candidates (sample)</th><th>Submitted</th><th>Days waiting</th><th>Blocker</th></tr></thead>
+      <tbody>${backlogRows || '<tr><td colspan="5" class="empty">No backlog rows in this snapshot.</td></tr>'}</tbody></table>
+    </div>
+
+    <h2 class="section-title" style="margin:24px 0 10px;">Candidate interview debriefs</h2>
+    ${debriefsHtml || '<div class="card empty">No debriefs in this snapshot.</div>'}
+
+    <h2 class="section-title" style="margin:24px 0 10px;">Recommendations — structural fixes</h2>
+    ${recsHtml}
+
+    <h2 class="section-title" style="margin:24px 0 10px;">Other notes</h2>
+    ${notesHtml}
+
+    <h2 class="section-title" style="margin:24px 0 10px;">Meeting intelligence (from Read.ai reports in Outlook)</h2>
+    ${meetingHtml}
+  `;
+}
+
+function renderAdminFeedback() {
+  const items = FEEDBACK.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).map((f) => {
+    const role = f.roleId ? ROLES.find((r) => r.id === f.roleId) : null;
+    const pname = f.partnerName || (PARTNERS.find((p) => p.id === f.partnerId) || {}).name || 'Unknown partner';
+    return `<div class="feedback-item"><div class="meta">${fmt(f.date)} · ${pname} ${role ? '· ' + role.title + ' (' + role.client + ')' : '· General'} ${f.resolved ? '<span class="resolved-tag">Resolved</span>' : ''}</div>
+      <div>${f.text}</div>
+      ${(!f.resolved && isAdminUser) ? `<div style="margin-top:8px;"><button class="btn ghost" onclick="resolveFeedback('${f.id}')">Mark resolved</button></div>` : ''}</div>`;
+  }).join('');
+  return `
+    <div class="card"><h2 class="section-title">Feedback inbox</h2>${items || '<div class="empty">No feedback submitted yet.</div>'}</div>
+    <h2 class="section-title" style="margin:28px 0 4px;font-size:16px;">Client Pulse — pipeline &amp; client health</h2>
+    <div class="modal-sub" style="margin-bottom:16px;">Broader client-side and pipeline intelligence, separate from partner-submitted notes above.</div>
+    ${renderAdminClientPulse()}
+  `;
+}
+async function resolveFeedback(id) {
+  try { await authFetch('/api/feedback', { method: 'PATCH', body: JSON.stringify({ id }) }); await loadAll(); switchTab('Feedback Inbox'); }
+  catch (err) { alert('Could not resolve: ' + err.message); }
+}
+
+/* =========================================================
+   SETTINGS (shared by both roles)
+   ========================================================= */
+function renderSettings() {
+  const viewingAsPartner = !!impersonatingPartner;
+  const name = viewingAsPartner ? impersonatingPartner.name : ((currentUser.user_metadata && currentUser.user_metadata.full_name) || '');
+  const email = viewingAsPartner ? impersonatingPartner.email : currentUser.email;
+  const roleLabel = viewingAsPartner ? 'Recruiting Partner' : (isAdminUser ? 'Liyema Admin' : (isStaffUser ? 'Liyema Team' : 'Recruiting Partner'));
+  const profileCard = viewingAsPartner ? `
+    <div class="card settings-card">
+      <h2 class="section-title" style="font-size:14px;">Account (read-only preview)</h2>
+      <form class="inline-form" onsubmit="return false;">
+        <div class="fld"><label>Full name</label><input type="text" value="${escapeAttr(name)}" disabled style="background:#f2f4f8;color:#78849a;"></div>
+        <div class="fld"><label>Email</label><input type="text" value="${escapeAttr(email)}" disabled style="background:#f2f4f8;color:#78849a;"></div>
+      </form>
+      <div class="note-box" style="margin-top:16px;margin-bottom:0;">
+        Role: <b>${roleLabel}</b> &nbsp;·&nbsp; Editing name and password actions are disabled while previewing another user's view — exit to admin view to make changes as yourself.
+      </div>
+    </div>` : `
+    <div class="card settings-card">
+      <h2 class="section-title" style="font-size:14px;">Your account</h2>
+      <form class="inline-form" onsubmit="return saveProfileName(event)">
+        <div class="fld"><label>Full name</label><input type="text" id="settingsName" value="${escapeAttr(name)}" required></div>
+        <div class="fld"><label>Email</label><input type="text" value="${escapeAttr(email)}" disabled style="background:#f2f4f8;color:#78849a;"></div>
+        <button class="btn gold" type="submit">Save name</button>
+      </form>
+      <div class="note-box" style="margin-top:16px;margin-bottom:0;">
+        Role: <b>${roleLabel}</b> &nbsp;·&nbsp;
+        ${isStaffUser
+          ? `<a href="#" onclick="toggleStaffRecoveryForm();return false;" style="color:var(--c-primary);font-weight:700;text-decoration:none;">Set/update my recovery question →</a>`
+          : `<a href="#" onclick="sendMyPasswordReset();return false;" style="color:var(--c-primary);font-weight:700;text-decoration:none;">Send me a password reset link →</a>`}
+      </div>
+      ${isStaffUser ? `
+      <div id="staffRecoveryForm" class="hidden" style="margin-top:16px;">
+        <div class="note-box" style="margin-bottom:12px;">
+          This question is what you'll be asked on the "Forgot password?" link on the sign-in page — no email required. Set it now so you can reset your own password later if you forget it.
+        </div>
+        <form class="inline-form" onsubmit="return saveStaffRecovery(event)">
+          <div class="fld"><label>Security question</label><input type="text" id="staffRecoveryQuestion" placeholder="e.g. What was your first pet's name?" required maxlength="200"></div>
+          <div class="fld"><label>Answer</label><input type="text" id="staffRecoveryAnswer" placeholder="Your answer" required></div>
+          <button class="btn gold" type="submit">Save recovery question</button>
+        </form>
+        <div id="staffRecoveryMsg" class="hidden" style="font-size:13px;margin-top:10px;"></div>
+      </div>` : ''}
+    </div>`;
+  const refreshLine = (isAdminUser && !viewingAsPartner) ? `
+      <div style="margin-top:14px;">
+        <button class="btn ghost sm" onclick="requestSquarelinkRefresh()">Request Squarelink refresh</button>
+        ${REFRESH_REQUEST ? `<div style="margin-top:8px;font-size:12px;color:var(--c-muted);">Last requested ${new Date(REFRESH_REQUEST.requestedAt).toLocaleString('en-ZA')} by ${REFRESH_REQUEST.requestedBy}.</div>` : ''}
+        <div class="note-box" style="margin-top:8px;margin-bottom:0;">Squarelink has no public API, so this can't pull data instantly on click — it logs a request that's picked up on the next automatic refresh (weekday mornings), or you can ask Claude directly in chat to "refresh the Squarelink data now" for an immediate pull.</div>
+      </div>` : '';
+  const squarelinkCard = `
+    <div class="card settings-card">
+      <h2 class="section-title" style="font-size:14px;">Squarelink</h2>
+      <div class="note-box">All candidate submissions and CV uploads happen directly in Squarelink, Liyema's recruitment ATS. This dashboard mirrors Squarelink's open-role data automatically for visibility — it doesn't replace it.</div>
+      <a class="btn gold" href="https://squarelink.co.za/recruiter/jobs" target="_blank" rel="noopener">Open Squarelink ↗</a>
+      <div style="margin-top:14px;font-size:12.5px;color:var(--c-muted);">Roles snapshot last pulled: <b>${DATA_PULLED_AT ? new Date(DATA_PULLED_AT).toLocaleString('en-ZA') : 'not loaded yet'}</b>. Refreshes automatically on a schedule.</div>
+      ${refreshLine}
+    </div>`;
+  if (!hasFullVisibility() || viewingAsPartner) return profileCard + squarelinkCard;
+
+  const syncStatusText = SYNC_CONFIGURED === null ? 'Unknown' : (SYNC_CONFIGURED ? '✅ Configured' : '⚠️ Not set — scheduled refresh will fail');
+  const systemNote = isAdminUser
+    ? `Add or remove partner and Liyema team accounts from the <b>Partners</b> tab. To rotate the sync secret, update the <code>SYNC_SECRET</code> environment variable under Site configuration → Environment variables, then trigger a redeploy.`
+    : `You have the same visibility as an admin, but account management (adding/removing partners or team members, resolving feedback, requesting a Squarelink refresh) is admin-only.`;
+  const systemCard = `
+    <div class="card settings-card">
+      <h2 class="section-title" style="font-size:14px;">System status</h2>
+      <table><tbody>
+        <tr><td style="font-weight:700;width:220px;">Partner accounts</td><td>${PARTNERS.length}</td></tr>
+        <tr><td style="font-weight:700;">Liyema team accounts</td><td>${STAFF.length}</td></tr>
+        <tr><td style="font-weight:700;">Open roles</td><td>${openRoles().length} of ${ROLES.length} total</td></tr>
+        <tr><td style="font-weight:700;">Squarelink sync secret</td><td>${syncStatusText}</td></tr>
+        <tr><td style="font-weight:700;">Data storage</td><td>Netlify Blobs (roles, submissions, feedback)</td></tr>
+        <tr><td style="font-weight:700;">Accounts &amp; login</td><td>Netlify Identity — invite-only, no self-signup</td></tr>
+      </tbody></table>
+      <div class="note-box" style="margin-top:14px;margin-bottom:0;">${systemNote}</div>
+    </div>`;
+  return profileCard + squarelinkCard + systemCard;
+}
+function escapeAttr(s) { return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+async function saveProfileName(e) {
+  e.preventDefault();
+  const name = document.getElementById('settingsName').value.trim();
+  if (!name) return false;
+  try {
+    const token = await currentUser.jwt();
+    const res = await fetch('/.netlify/identity/user', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ user_metadata: { full_name: name } }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.msg || data.error_description || `Failed (${res.status})`);
+    currentUser.user_metadata = data.user_metadata || { full_name: name };
+    document.getElementById('whoName').textContent = name;
+    alert('Name updated.');
+  } catch (err) { alert('Could not update name: ' + err.message); }
+  return false;
+}
+
+async function sendMyPasswordReset() {
+  if (!confirm(`Send a password reset link to ${currentUser.email}?`)) return;
+  try {
+    const res = await fetch('/.netlify/identity/recover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: currentUser.email }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.msg || data.error_description || `Failed (${res.status})`);
+    alert(`Reset link sent to ${currentUser.email}. Open the email and use the link to set a new password.`);
+  } catch (err) { alert('Could not send reset email: ' + err.message); }
+}
+
+function toggleStaffRecoveryForm() {
+  const el = document.getElementById('staffRecoveryForm');
+  if (el) el.classList.toggle('hidden');
+}
+async function saveStaffRecovery(e) {
+  e.preventDefault();
+  const question = document.getElementById('staffRecoveryQuestion').value.trim();
+  const answer = document.getElementById('staffRecoveryAnswer').value;
+  const msgEl = document.getElementById('staffRecoveryMsg');
+  msgEl.className = 'hidden';
+  try {
+    await authFetch('/api/set-my-recovery', { method: 'POST', body: JSON.stringify({ question, answer }) });
+    msgEl.style.color = '#1e7e34';
+    msgEl.textContent = 'Saved. You can now use "Forgot password?" on the sign-in page with this question.';
+    msgEl.classList.remove('hidden');
+    document.getElementById('staffRecoveryAnswer').value = '';
+  } catch (err) {
+    msgEl.style.color = '#c0392b';
+    msgEl.textContent = 'Could not save: ' + err.message;
+    msgEl.classList.remove('hidden');
+  }
+  return false;
+}
+
+/* =========================================================
+   PARTNER ACCOUNT MANAGEMENT (admin only — from Partners tab)
+   ========================================================= */
+async function resendInvite(partnerId) {
+  const p = PARTNERS.find((x) => x.id === partnerId) || STAFF.find((x) => x.id === partnerId);
+  if (!p) return;
+  if (!confirm(`Send a password-set/reset email to ${p.name} (${p.email})?`)) return;
+  try {
+    const res = await fetch('/.netlify/identity/recover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: p.email }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.msg || data.error_description || `Failed (${res.status})`);
+    alert(`Invite/reset email sent to ${p.email}.`);
+  } catch (err) { alert('Could not send invite email: ' + err.message); }
+}
+async function editPartnerCompany(partnerId, fullName, currentCompany) {
+  const company = prompt(`Company name for ${fullName}:`, currentCompany || '');
+  if (company === null) return;
+  try {
+    await authFetch('/api/update-partner', { method: 'POST', body: JSON.stringify({ userId: partnerId, company }) });
+    await loadAll();
+    switchTab('Partners');
+  } catch (err) { alert('Could not update company: ' + err.message); }
+}
+async function confirmPartnerEmail(partnerId, fullName) {
+  const p = PARTNERS.find((x) => x.id === partnerId);
+  if (!p) return;
+  if (!confirm(`Re-sync ${p.name}'s role/name and attempt to force-confirm their account (${p.email})? Note: confirmation itself usually still requires them to click the link in their invite email -- this mainly fixes accounts created via the Netlify dashboard's "Invite users" that are missing their role/name.`)) return;
+  try {
+    await authFetch('/api/confirm-partner', { method: 'POST', body: JSON.stringify({ userId: p.id, fullName }) });
+    await loadAll();
+    switchTab('Partners');
+    alert(`Done. If ${p.name} still can't log in, they need to open their invite email and click the confirmation link -- resend it with "Resend invite" if needed.`);
+  } catch (err) { alert('Could not update partner account: ' + err.message); }
+}
+async function refreshDataPill() {
+  // The topbar "Refresh data" pill used to just silently re-read our own cached
+  // store (a no-op with respect to Squarelink). Squarelink has no public API, so
+  // there's no way to trigger a live scrape synchronously from the browser --
+  // but we can at least (a) reload whatever's currently stored, and (b) log a
+  // refresh request the same way Settings' "Request Squarelink refresh" does, so
+  // it's visible and gets prioritised on the next scheduled pull (or an ad-hoc
+  // one asked for directly in chat).
+  const canRequest = isAdminUser && !impersonatingPartner;
+  let requested = false;
+  if (canRequest) {
+    try {
+      const res = await authFetch('/api/request-refresh', { method: 'POST' });
+      REFRESH_REQUEST = { requestedAt: res.requestedAt, requestedBy: res.requestedBy };
+      requested = true;
+    } catch (err) { /* non-fatal -- still reload the cached data below */ }
+  }
+  await loadAll(true);
+  if (canRequest) {
+    alert(requested
+      ? 'Reloaded the latest saved data and logged a request for a fresh Squarelink pull. The scheduled sync (or Claude asked directly in chat) will pick this up soon -- see Settings for the live snapshot time.'
+      : 'Reloaded the latest saved data. Could not log a Squarelink refresh request just now -- try again, or use "Request Squarelink refresh" in Settings.');
+  }
+}
+async function requestSquarelinkRefresh() {
+  try {
+    const res = await authFetch('/api/request-refresh', { method: 'POST' });
+    REFRESH_REQUEST = { requestedAt: res.requestedAt, requestedBy: res.requestedBy };
+    switchTab('Settings');
+    alert('Refresh requested. It will be picked up on the next automatic run — ask Claude directly in chat for an immediate pull.');
+  } catch (err) { alert('Could not log refresh request: ' + err.message); }
+}
+async function removePartner(partnerId) {
+  const p = PARTNERS.find((x) => x.id === partnerId) || STAFF.find((x) => x.id === partnerId);
+  if (!p) return;
+  if (!confirm(`Remove ${p.name} (${p.email})? They will lose access immediately. This cannot be undone from here.`)) return;
+  try {
+    await authFetch('/api/remove-partner', { method: 'POST', body: JSON.stringify({ userId: p.id }) });
+    await loadAll();
+    switchTab('Partners');
+  } catch (err) { alert('Could not remove partner: ' + err.message); }
+}
+</script>
+</body>
+</html>

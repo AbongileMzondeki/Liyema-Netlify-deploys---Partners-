@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Set your password — Liyema Partners Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --c-primary:#0f2942; --c-primary-light:#1c3f60;
+  --c-bg:#f2f4f8; --c-card:#ffffff; --c-text:#1c2733; --c-muted:#78849a; --c-border:#e4e9f1;
+  --c-danger:#c0392b; --c-danger-bg:#fdecea; --c-danger-border:#f3c9c4;
+  --c-success:#1e7a4c; --c-success-bg:#e7f6ee; --c-success-border:#bfe4cf;
+  --c-accent:#c9a227;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--font);background:var(--c-primary);color:var(--c-text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.card{background:var(--c-card);border-radius:16px;padding:40px;width:400px;max-width:100%;box-shadow:0 16px 40px rgba(15,41,66,.25);}
+h1{font-size:20px;color:var(--c-primary);margin:0 0 6px;}
+p.sub{font-size:13.5px;color:var(--c-muted);margin:0 0 24px;line-height:1.5;}
+label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--c-muted);margin-bottom:5px;}
+input{width:100%;padding:11px 13px;border:1px solid var(--c-border);border-radius:8px;font-size:14px;margin-bottom:16px;font-family:var(--font);}
+button{width:100%;padding:13px;border:none;border-radius:8px;background:var(--c-primary);color:#fff;font-size:14px;font-weight:700;cursor:pointer;}
+button:hover{background:var(--c-primary-light);}
+button:disabled{opacity:.6;cursor:default;}
+.msg{border-radius:8px;padding:12px 14px;font-size:13px;margin-bottom:16px;display:none;}
+.msg.error{background:var(--c-danger-bg);color:var(--c-danger);border:1px solid var(--c-danger-border);}
+.msg.success{background:var(--c-success-bg);color:var(--c-success);border:1px solid var(--c-success-border);}
+.msg.show{display:block;}
+a.btn-link{display:block;text-align:center;margin-top:14px;color:var(--c-primary);font-weight:700;font-size:13.5px;text-decoration:none;}
+#noToken{display:none;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="withToken">
+    <h1>Set your password</h1>
+    <p class="sub">You're setting a password for your Liyema Partners Dashboard account. This link works once — after this, log in normally from the homepage.</p>
+    <div class="msg error" id="errMsg"></div>
+    <div class="msg success" id="okMsg"></div>
+    <form id="pwForm">
+      <label>New password</label>
+      <input type="password" id="pw1" minlength="8" required autocomplete="new-password">
+      <label>Confirm password</label>
+      <input type="password" id="pw2" minlength="8" required autocomplete="new-password">
+      <button type="submit" id="submitBtn">Set password</button>
+    </form>
+  </div>
+  <div id="noToken">
+    <h1>No reset link found</h1>
+    <p class="sub">Open this page using the link from your invite or password reset email — it should end with <code>#recovery_token=...</code>, <code>#invite_token=...</code>, or <code>#confirmation_token=...</code>.</p>
+  </div>
+</div>
+<script>
+/* Netlify Identity issues different token param names depending on the flow
+   (recovery = "forgot password", invite/signup = admin-created account's
+   first login) — each needs a different `type` when verifying with GoTrue,
+   but the rest of the set-password flow is identical. */
+function getTokenInfo() {
+  const hash = location.hash.replace(/^#/, '');
+  const params = new URLSearchParams(hash);
+  if (params.get('recovery_token')) return { token: params.get('recovery_token'), type: 'recovery' };
+  if (params.get('invite_token')) return { token: params.get('invite_token'), type: 'invite' };
+  if (params.get('confirmation_token')) return { token: params.get('confirmation_token'), type: 'signup' };
+  return null;
+}
+const tokenInfo = getTokenInfo();
+const token = tokenInfo && tokenInfo.token;
+if (!token) {
+  document.getElementById('withToken').style.display = 'none';
+  document.getElementById('noToken').style.display = 'block';
+} else {
+  document.getElementById('pwForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errEl = document.getElementById('errMsg');
+    const okEl = document.getElementById('okMsg');
+    errEl.classList.remove('show');
+    okEl.classList.remove('show');
+    const pw1 = document.getElementById('pw1').value;
+    const pw2 = document.getElementById('pw2').value;
+    if (pw1 !== pw2) {
+      errEl.textContent = 'Passwords do not match.';
+      errEl.classList.add('show');
+      return;
+    }
+    if (pw1.length < 8) {
+      errEl.textContent = 'Password must be at least 8 characters.';
+      errEl.classList.add('show');
+      return;
+    }
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Setting password…';
+    try {
+      const verifyRes = await fetch('/.netlify/identity/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: tokenInfo.type, token }),
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok) {
+        throw new Error(verifyData.msg || verifyData.error_description || `Reset link is no longer valid (${verifyRes.status}). Ask your Liyema admin contact for a new one.`);
+      }
+      const accessToken = verifyData.access_token;
+      const putRes = await fetch('/.netlify/identity/user', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ password: pw1 }),
+      });
+      const putData = await putRes.json();
+      if (!putRes.ok) {
+        throw new Error(putData.msg || putData.error_description || `Could not set password (${putRes.status}).`);
+      }
+      document.getElementById('pwForm').style.display = 'none';
+      okEl.textContent = 'Password set! You can close this page and log in from the dashboard homepage with your email and new password.';
+      okEl.classList.add('show');
+    } catch (err) {
+      errEl.textContent = err.message || String(err);
+      errEl.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Set password';
+    }
+  });
+}
+</script>
+</body>
+</html>
