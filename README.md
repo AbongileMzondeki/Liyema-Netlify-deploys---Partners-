@@ -115,3 +115,5 @@ There's no separate database to manage — everything (roles, submissions, feedb
 Blobs**, a built-in key-value store tied to your site. Partner *accounts* (email, password, admin/partner
 role) live in **Netlify Identity**, Netlify's built-in auth service. Both are already wired up in the code
 above; you don't need to provision anything beyond enabling Identity (Step 2).
+
+_Deploy pipeline verified working via git push on 2026-09-04 — Claude can push updates directly going forward._
